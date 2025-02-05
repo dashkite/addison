@@ -36,10 +36,11 @@
     "@dashkite/amen": "^0.2.0",
     "@dashkite/amen-console": "^0.0.2",
     "@dashkite/assert": "^0.1.4",
+    "@dashkite/belmont": "link:../belmont",
     "@dashkite/genie": "link:../genie",
     "@dashkite/genie-clean": "link:../genie-clean",
-    "@dashkite/genie-coffee": "link:../genie-coffee"
-  },
-  "dependencies": {
+    "@dashkite/genie-coffee": "link:../genie-coffee",
+    "@dashkite/halstead": "link:../halstead",
+    "@dashkite/montrose": "link:../montrose"
   }
 }
