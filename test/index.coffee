@@ -8,8 +8,22 @@ import Providers from "@dashkite/belmont/providers"
 import Halstead from "@dashkite/halstead"
 Providers.add "local", Halstead
 
-# test component
+frame = ->
+  new Promise ( resolve ) ->
+    queueMicrotask resolve
+
+expect = ( assertion ) ->
+  new Promise ( resolve, reject ) ->
+    for i in [0...10]
+      if assertion()
+        resolve()
+        break
+      await frame()
+    reject new Error "expect: assertion timeout"
+
+# test components
 import Greeting from "./greeting"
+import List from "./list"
 
 do ->
 
@@ -19,20 +33,46 @@ do ->
 
       greeting = await Greeting.make()
 
+      # initializing for testing purposes
+      # (not actually part of the test)
       await greeting[ "set greeting" ] "hello!"
       await greeting[ "set profile" ] email: "bob@acme.org"
 
-      # wait for events to finish
-      await Time.sleep 100
+      greeting.activate()
 
-      await greeting.observe()
+      await expect ->
+        greeting.state.value.profile? &&
+          greeting.state.value.greeting?
 
       await greeting[ "set greeting" ] "hola!"
+    
+      await expect ->
+        greeting.state.value.greeting == "hola!"
 
-      # wait for events to finish
-      await Time.sleep 100
+    test "Complex Component", ->
 
-      console.log greeting.values
+      list = await List.make()
+
+      # initializing for testing purposes
+      # (not actually part of the test)
+      await list[ "add item" ] "The Godfather"
+      await list[ "add item" ] "Ran"
+      await list[ "select item" ] "Ran"
+
+      list.activate()
+
+      await expect ->
+        list.state.value.state?.selected? &&
+          ( list.state.value.list?.length == 2 ) &&
+          ( list.state.resources.state.resource.observers.size > 0 ) &&
+          ( list.state.resources.list.resource.observers.size > 0 )
+
+      await list[ "remove item" ] "Ran"
+    
+      await expect ->
+        ( list.state.value.list.length == 1 ) &&
+          ( list.state.value.state.selected == "The Godfather" )
+
 
   ]
 
