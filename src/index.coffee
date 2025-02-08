@@ -60,8 +60,8 @@ class Addison
     for name, resource of @resources
       resource.cancel()
 
-  transition: ( names, transform ) ->
-    patch = await transform Obj.mask names, @value
+  transition: ( names, transition ) ->
+    patch = await transition.apply @, [ Obj.mask names, @value ]
     resources = @resources
     Promise.all do ->
       for key, value of patch

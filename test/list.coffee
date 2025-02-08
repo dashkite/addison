@@ -1,44 +1,40 @@
 import * as Arr from "@dashkite/joy/array"
-import Addison from "../src"
+import * as Meta from "@dashkite/joy/metaclass"
+import Basic from "../src/mixins/basic"
+
+{ resources, transitions } = Basic
 
 class List
 
-  @make: ->
+  Meta.mixin @, [
 
-    state = await Addison.resolve
+    resources
       state: template: "local:/components/list"
       list: template: "local:/lists/favorite-movies"
-    
-    state.value =
-      state: {}
-      list: []
 
-    Object.assign ( new @ ), { state }
-  
-  activate: -> 
-    @state
-      .observe()
-      # .when "update", ({ value }) ->
-      #   console.log value
-      .run()
+    transitions
 
-  deactivate: -> @state.cancel()
-  
-  "add item": ( item ) ->
-    @state.transition [ "list" ], ({ list }) ->
-      list.push item
-      { list }
+      "add item": 
+        scope: [ "list" ], 
+        transition: ( item, { list }) ->
+          list.push item
+          { list }
 
-  "select item": ( item ) ->
-    @state.transition [ "state" ], ({ state }) ->
-      state.selected = item
-      { state }
+      "select item":
+        scope: [ "state" ]
+        transition: ( item, { state }) ->
+          state.selected = item
+          { state }
 
-  "remove item": ( item ) ->
-    @state.transition [ "state", "list" ], ({ state, list }) ->
-      Arr.remove item, list
-      if state.selected == item
-        state.selected = list[0]
-      { state, list }
+      "remove item":
+        scope: [ "state", "list" ], 
+        transition: ( item, { state, list }) ->
+          Arr.remove item, list
+          if state.selected == item
+            state.selected = list[0]
+          { state, list }
+
+  ]
+
 
 export default List
