@@ -51,7 +51,8 @@ do ->
 
     test "Complex Component", ->
 
-      list = await List.resolve()
+      list = await List.make()
+      await list.resolve()
 
       # initializing for testing purposes
       # (not actually part of the test)

@@ -7,6 +7,13 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@dashkite/joy':
+        specifier: link:../joy
+        version: link:../joy
+      '@dashkite/reactive':
+        specifier: link:../reactive
+        version: link:../reactive
     devDependencies:
       '@dashkite/amen':
         specifier: ^0.2.0

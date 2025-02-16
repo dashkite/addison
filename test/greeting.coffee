@@ -4,9 +4,11 @@ class Greeting
 
   @make: ->
 
-    state = await Addison.resolve
+    state = await Addison.make
       greeting: template: "local:/components/greeting"
       profile: template: "local:/profile"
+
+    await state.resolve()
 
     Object.assign ( new @ ), { state, values: [] }
   

@@ -4,16 +4,18 @@ import Montrose from "@dashkite/montrose"
 
 class Addison
 
-  @resolve: ( locators ) ->
+  @make: ( locators ) ->
     self = new @
     self.locators = locators
     self.resources = {}
     self.value = {}
-
-    for name, locator of locators
-      self.resources[ name ] = await Montrose.resolve locator
-
     self
+
+  # TODO deactivate / cancel first?
+  #      or require a new instance?
+  resolve: ( specifier ) ->
+    for name, locator of @locators
+      @resources[ name ] = await Montrose.resolve { locator..., specifier... }
 
   observe: ->
 
@@ -41,18 +43,18 @@ class Addison
         do ( name, resource ) ->
           resource
             .observe()
-            .each ( event ) ->
-              self.observer.dispatch if event.value?
-                { event..., value: self.value }
-              else
-                event
             .when "update", ({ value: update }) ->
               # TODO save previous state
               # TODO allow component processing
               self.value[ name ] = update
+            .each ( event ) ->
+              if event.value?
+                self.observer.dispatch { event..., value: self.value }
+              else
+                event
             .run()
 
-      self.observer.dispatch name: "update", value: self.value
+        self.observer.dispatch name: "update", value: self.value
 
     @observer
   
