@@ -14,7 +14,7 @@ frame = ->
 
 expect = ( assertion ) ->
   new Promise ( resolve, reject ) ->
-    for i in [0...10]
+    for i in [0...100]
       if assertion()
         resolve()
         break
@@ -35,46 +35,29 @@ do ->
 
       # initializing for testing purposes
       # (not actually part of the test)
-      await greeting[ "set greeting" ] "hello!"
-      await greeting[ "set profile" ] email: "bob@acme.org"
-
-      greeting.activate()
-
-      await expect ->
-        greeting.state.value.profile? &&
-          greeting.state.value.greeting?
-
-      await greeting[ "set greeting" ] "hola!"
+      greeting[ "set greeting" ] "hello!"
+      greeting[ "set profile" ] email: "bob@acme.org"
+      # initialize values
+      greeting.start()
+      # update value
+      greeting[ "set greeting" ] "hola!"
     
       await expect ->
         greeting.state.value.greeting == "hola!"
 
     test "Complex Component", ->
 
-      list = await List.make()
-      await list.resolve()
+      list = await List.resolve()
 
-      # initializing for testing purposes
-      # (not actually part of the test)
-      list.state.value = { list: [], state: {}}
-      await list[ "add item" ] "The Godfather"
-      await list[ "add item" ] "Ran"
-      await list[ "select item" ] "Ran"
-
-      # list.activate()
-
-      # await expect ->
-      #   list.state.value.state?.selected? &&
-      #     ( list.state.value.list?.length == 2 ) &&
-      #     ( list.state.resources.state.resource.observers.size > 0 ) &&
-      #     ( list.state.resources.list.resource.observers.size > 0 )
-
-      await list[ "remove item" ] "Ran"
+      list.state.value = { list: [], internal: {}}
+      list[ "add item" ] "The Godfather"
+      list[ "add item" ] "Ran"
+      list[ "select item" ] "Ran"
+      list[ "remove item" ] "Ran"
     
       await expect ->
         ( list.state.value.list.length == 1 ) &&
-          ( list.state.value.state.selected == "The Godfather" )
-
+          ( list.state.value.internal.selected == "The Godfather" )
 
   ]
 

@@ -1,39 +1,35 @@
 import * as Arr from "@dashkite/joy/array"
 import * as Meta from "@dashkite/joy/metaclass"
 import Basic from "../src/mixins/basic"
+import HTTP from "#helpers/http"
+import { getters } from "#helpers/meta"
 
 { resources, transitions } = Basic
 
 class List
 
-  Meta.mixin @, [
+  resources @,
+    internal: template: "local:/components/list"
+    list: template: "local:/lists/favorite-movies"
 
-    resources
-      state: template: "local:/components/list"
-      list: template: "local:/lists/favorite-movies"
+  getters @,
+    resources: -> @state.resources
 
-    transitions
+  "add item": ( item ) ->
+    @state.put [ "list" ], ({ list }) -> 
+      list.push item
+      { list }
 
-      "add item": 
-        scope: [ "list" ], 
-        transition: ( item, { list }) ->
-          list.push item
-          { list }
+  "select item":( item ) ->
+    @state.put [ "internal" ], ({ internal }) ->
+      internal.selected = item
+      { internal }
 
-      "select item":
-        scope: [ "state" ]
-        transition: ( item, { state }) ->
-          state.selected = item
-          { state }
-
-      "remove item":
-        scope: [ "state", "list" ], 
-        transition: ( item, { state, list }) ->
-          Arr.remove item, list
-          if state.selected == item
-            state.selected = list[0]
-          { state, list }
-
-  ]
-
+  "remove item": ( item ) ->
+    @state.put [ "list", "internal" ], ({ list, internal }) ->
+      Arr.remove item, list
+      if internal.selected == item
+        internal.selected = list[0]
+      { list, internal }
+ 
 export default List

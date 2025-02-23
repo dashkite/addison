@@ -12,19 +12,17 @@ class Greeting
 
     Object.assign ( new @ ), { state, values: [] }
   
-  activate: -> 
-    @state
-      .observe()
-      # .when "update", ({ value }) ->
-      #   console.log value
-      .run()
+  start: -> 
+    for await event from @state.observe()
+      undefined
+    undefined
 
-  deactivate: -> @state.cancel()
+  stop: -> @state.cancel()
   
   "set greeting": ( greeting ) ->
-    @state.transition [ "greeting" ], -> { greeting }
+    @state.put [ "greeting" ], -> { greeting }
 
   "set profile": ( profile ) ->
-    @state.transition [ "profile" ], -> { profile }
+    @state.put [ "profile" ], -> { profile }
 
 export default Greeting

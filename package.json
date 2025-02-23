@@ -27,6 +27,12 @@
       "node": "./build/node/src/mixins/*.js"
     }
   },
+  "imports": {
+    "#helpers/*": {
+      "browser": "./build/browser/src/helpers/*.js",
+      "node": "./build/node/src/helpers/*.js"
+    }
+  },
   "files": [
     "build/browser/src",
     "build/node/src"

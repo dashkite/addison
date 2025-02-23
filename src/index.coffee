@@ -1,6 +1,6 @@
 import * as Obj from "@dashkite/joy/object"
-import Observer from "@dashkite/belmont/observer"
 import Montrose from "@dashkite/montrose"
+import Channel from "#helpers/channel"
 
 class Addison
 
@@ -9,6 +9,7 @@ class Addison
     self.locators = locators
     self.resources = {}
     self.value = {}
+    self.channel = Channel.make()
     self
 
   # TODO deactivate / cancel first?
@@ -19,57 +20,47 @@ class Addison
 
   observe: ->
 
-    # TODO should we initialize values in a separate method
-    #      ... or should that be in resolve
+    @get Object.keys @resources
+        
+    for name, resource of @resources
+      do ( name, resource ) =>
+        for await event from resource.observe()
+          switch event.name
+            when "update" then @value[ name ] = event.value
+          @channel.send if event.value?
+            { event..., value: @value }
+          else
+            event
 
-    # we have to set up our local state before setting up
-    # the observers because otherwise a non-local update
-    # could trigger our observer before our local state
-    # is fully initialized...
-
-    @observer = Observer.make()
-
-    self = @
-
-    do ->
-
-      for name, resource of self.resources
-        self.value[ name ] = Obj.get "value",
-          await resource
-            .get()
-            .resolve "value"
-
-      for name, resource of self.resources
-        do ( name, resource ) ->
-          resource
-            .observe()
-            .when "update", ({ value: update }) ->
-              # TODO save previous state
-              # TODO allow component processing
-              self.value[ name ] = update
-            .each ( event ) ->
-              if event.value?
-                self.observer.dispatch { event..., value: self.value }
-              else
-                event
-            .run()
-
-        self.observer.dispatch name: "update", value: self.value
-
-    @observer
+    @channel
   
   cancel: ->
     for name, resource of @resources
       resource.cancel()
+    @channel.close()
+    delete @channel
 
-  transition: ( names, transition ) ->
-    patch = await transition.apply @, [ Obj.mask names, @value ]
-    resources = @resources
-    Promise.all do ->
-      for key, value of patch
-        do ( resource = resources[ key ]) ->
-          resource
-            .put value 
-            .resolve "success"  
+  get: ( names ) ->
+    for name, resource of ( Obj.mask names, @resources )
+      do ( name, resource ) =>
+        for await event from resource.get()
+          switch event.name
+            when "value"
+              @value[ name ] = event.value
+              @channel.send
+                name: "update"
+                value: @value
+            when "failure"
+              @channel.send event
+    undefined
+
+  put: ( names, mutator ) ->
+    updates = await mutator.apply @, [ Obj.mask names, @value ]
+    for key, value of updates
+      for await event from ( @resources[ key ].put value )
+        continue
+    undefined
+
+
 
 export default Addison
