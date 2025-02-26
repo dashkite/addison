@@ -1,7 +1,7 @@
 import { Queue } from "@dashkite/joy/iterable"
 import * as Fn from "@dashkite/joy/function"
 import EventReactor from "@dashkite/reactive/event-reactor"
-import { getters } from "#helpers/meta"
+import { getters } from "../helpers/meta"
 import Addison from "../index"
 
 Basic =
