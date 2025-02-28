@@ -1,8 +1,8 @@
 import * as Arr from "@dashkite/joy/array"
 import * as Meta from "@dashkite/joy/metaclass"
 import Basic from "../src/mixins/basic"
-import HTTP from "#helpers/http"
-import { getters } from "#helpers/meta"
+import HTTP from "../src/helpers/http"
+import { getters } from "../src/helpers/meta"
 
 { resources, transitions } = Basic
 

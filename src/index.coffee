@@ -1,6 +1,6 @@
 import * as Obj from "@dashkite/joy/object"
 import Montrose from "@dashkite/montrose"
-import Channel from "./helpers/channel"
+import Channel from "@dashkite/reactive/channel"
 
 class Addison
 
