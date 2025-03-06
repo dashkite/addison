@@ -16,20 +16,18 @@ class List
     resources: -> @state.resources
 
   "add item": ( item ) ->
-    @state.put [ "list" ], ({ list }) -> 
+    @state.put Fn.tee ({ list }) -> 
       list.push item
-      { list }
 
   "select item":( item ) ->
-    @state.put [ "internal" ], ({ internal }) ->
+    @state.put Fn.tee ({ internal }) ->
       internal.selected = item
-      { internal }
 
   "remove item": ( item ) ->
-    @state.put [ "list", "internal" ], ({ list, internal }) ->
+    @state.put ({ list, internal }) ->
       Arr.remove item, list
       if internal.selected == item
         internal.selected = list[0]
-      { list, internal }
- 
+      { list, internal }       
+
 export default List
