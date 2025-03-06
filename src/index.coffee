@@ -27,7 +27,7 @@ class Addison
         for await event from resource.observe()
           switch event.name
             when "update" then @value[ name ] = event.value
-          @channel.send if event.value?
+          @channel?.send if event.value?
             { event..., value: @value }
           else
             event
@@ -47,7 +47,7 @@ class Addison
           switch event.name
             when "value"
               @value[ name ] = event.value
-              @channel.send
+              @channel?.send
                 name: "update"
                 value: @value
             when "failure"
