@@ -1,10 +1,8 @@
 import * as Arr from "@dashkite/joy/array"
-import * as Meta from "@dashkite/joy/metaclass"
 import Basic from "../src/mixins/basic"
-import HTTP from "../src/helpers/http"
 import { getters } from "../src/helpers/meta"
 
-{ resources, transitions } = Basic
+{ resources, defaults } = Basic
 
 class List
 
@@ -12,15 +10,20 @@ class List
     internal: template: "local:/components/list"
     list: template: "local:/lists/favorite-movies"
 
-  getters @,
-    resources: -> @state.resources
+  defaults @,
+    list: []
+    internal: {}
+
+  listen: -> @state.listen()
+
+  close: -> @state.close()
 
   "add item": ( item ) ->
-    @state.put Fn.tee ({ list }) -> 
+    @state.put ({ list }) -> 
       list.push item
 
-  "select item":( item ) ->
-    @state.put Fn.tee ({ internal }) ->
+  "select item": ( item ) ->
+    @state.put ({ internal }) ->
       internal.selected = item
 
   "remove item": ( item ) ->
@@ -28,6 +31,5 @@ class List
       Arr.remove item, list
       if internal.selected == item
         internal.selected = list[0]
-      { list, internal }       
 
 export default List

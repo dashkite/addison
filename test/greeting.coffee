@@ -1,28 +1,23 @@
-import Addison from "../src"
+import Basic from "../src/mixins/basic"
+import { getters } from "../src/helpers/meta"
+
+{ resources, defaults } = Basic
+
 
 class Greeting
 
-  @make: ->
+  resources @,
+    greeting: template: "local:/components/greeting"
+    profile: template: "local:/profile"
 
-    state = await Addison.make
-      greeting: template: "local:/components/greeting"
-      profile: template: "local:/profile"
+  listen: -> @state.listen()
 
-    await state.resolve()
-
-    Object.assign ( new @ ), { state, values: [] }
-  
-  start: -> 
-    for await event from @state.observe()
-      undefined
-    undefined
-
-  stop: -> @state.cancel()
+  close: -> @state.close()
   
   "set greeting": ( greeting ) ->
-    @state.put [ "greeting" ], -> { greeting }
-
+    @state.put ( state ) -> state.greeting = greeting
+  
   "set profile": ( profile ) ->
-    @state.put [ "profile" ], -> { profile }
+    @state.put  ( state ) -> state.profile = profile
 
 export default Greeting

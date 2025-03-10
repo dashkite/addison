@@ -8,19 +8,6 @@ import Providers from "@dashkite/belmont/providers"
 import Halstead from "@dashkite/halstead"
 Providers.add "local", Halstead
 
-frame = ->
-  new Promise ( resolve ) ->
-    queueMicrotask resolve
-
-expect = ( assertion ) ->
-  new Promise ( resolve, reject ) ->
-    for i in [0...100]
-      if assertion()
-        resolve()
-        break
-      await frame()
-    reject new Error "expect: assertion timeout"
-
 # test components
 import Greeting from "./greeting"
 import List from "./list"
@@ -31,33 +18,32 @@ do ->
 
     test "Basic Component", ->
 
-      greeting = await Greeting.make()
+      greeting = await Greeting.resolve()
 
-      # initializing for testing purposes
-      # (not actually part of the test)
+      greeting.listen()
+
       greeting[ "set greeting" ] "hello!"
       greeting[ "set profile" ] email: "bob@acme.org"
-      # initialize values
-      greeting.start()
       # update value
       greeting[ "set greeting" ] "hola!"
     
-      await expect ->
+      await assert.expect ->
         greeting.state.value.greeting == "hola!"
 
     test "Complex Component", ->
 
       list = await List.resolve()
 
-      list.state.value = { list: [], internal: {}}
+      list.listen()
+
       list[ "add item" ] "The Godfather"
       list[ "add item" ] "Ran"
       list[ "select item" ] "Ran"
       list[ "remove item" ] "Ran"
     
-      await expect ->
-        ( list.state.value.list.length == 1 ) &&
-          ( list.state.value.internal.selected == "The Godfather" )
+      await assert.expect timeout: 5000, ->
+        ( list.state.value.list?.length == 1 ) &&
+          ( list.state.value.internal?.selected == "The Godfather" )
 
   ]
 

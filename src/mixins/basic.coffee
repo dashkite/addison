@@ -14,8 +14,8 @@ Basic =
       self
 
     T::resolve = ( specifier ) -> 
-      @initialize?()
       await @state.resolve specifier
+      await @start?()
       @
 
     T.resolve = ( specifier ) ->
@@ -25,5 +25,8 @@ Basic =
       resources: -> @state.resources
       channel: -> @state.channel
 
+  defaults: ( T, defaults ) ->
+    T::start = -> @state.defaults = defaults
+  
 
 export default Basic
