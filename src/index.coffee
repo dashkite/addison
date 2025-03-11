@@ -4,6 +4,7 @@ import * as Time from "@dashkite/joy/time"
 import { Queue } from "@dashkite/joy/iterable"
 import Belmont from "@dashkite/belmont"
 import Channel from "@dashkite/reactive/channel"
+import { getters } from "./helpers/meta"
 
 class Addison
 
@@ -14,11 +15,15 @@ class Addison
     @channels = {}
     @value ?= {}
 
-  isValid: ->
-    for key of @resources
-      if !( Object.hasOwn @value, key )
-        return false
-    true
+  getters @::,
+    starting: ->
+      for key of @resources
+        if ( Object.hasOwn @value, key )
+          return false
+      true
+    running: -> !@starting
+    waiting: -> !@listening
+    listening: -> @channel?
 
   # TODO deactivate / cancel first?
   #      or require a new instance?
@@ -28,27 +33,31 @@ class Addison
       @channels[ name ] = @resources[ name ].subscribe()
     @get()
 
+  when: ( state, f ) ->
+    if await Time.expect => @[ state ]
+      f.call @
+    else 
+      throw new Error "addison: never reached [ #{ state } ]"
+
   listen: ->
-    throw new Error "addison: already listening" if @channel?
-    # TODO make idempotent or throw already listening?
-    @channel = Channel.make()
-    for scope, resource of @resources
-      do ( scope, resource ) =>
-        for await request from @channels[ scope ]
-          for await event from request.reactor
+    @when "waiting", =>
+      # TODO make idempotent or throw already listening?
+      @channel = Channel.make()
+      for scope, resource of @resources
+        do ( scope, resource ) =>
+          for await event from @channels[ scope ]
             switch event.name
               when "value"
                 @value[ scope ] = event.value
                 @channel.send { event..., @value, scope }
-              when "failure"
-                # TODO restrict to not found error?
+              when "not found"
                 if !( Object.hasOwn @value, scope )
                   @value[ scope ] = @defaults?[ scope ]
                   @resources[ scope ].put @defaults?[ scope ]
               else
                 @channel.send { event..., scope }
-        return
-    @channel
+          return
+      @channel
   
   [ Symbol.asyncIterator ]: -> @listen()
 
@@ -61,11 +70,9 @@ class Addison
     return
 
   put: ( mutator ) ->
-    if await Time.expect => @isValid()
+    @when "running", =>
       await mutator.call @, @value
       ( @resources[ key ].put value ) for key, value of @value
       return
-    else
-      throw new Error "addison: unable to initialize value"
 
 export default Addison

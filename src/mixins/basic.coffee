@@ -28,5 +28,4 @@ Basic =
   defaults: ( T, defaults ) ->
     T::start = -> @state.defaults = defaults
   
-
 export default Basic
