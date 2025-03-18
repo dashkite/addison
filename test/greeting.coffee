@@ -1,23 +1,17 @@
 import Basic from "../src/mixins/basic"
 import { getters } from "../src/helpers/meta"
 
-{ resources, defaults } = Basic
-
+{ resource } = Basic
 
 class Greeting
 
-  resources @,
-    greeting: template: "local:/components/greeting"
-    profile: template: "local:/profile"
+  resource @, template: "local:/components/greeting"
 
   listen: -> @state.listen()
 
   close: -> @state.close()
   
   "set greeting": ( greeting ) ->
-    @state.put ( state ) -> state.greeting = greeting
+    @state.put ( state ) -> state = greeting
   
-  "set profile": ( profile ) ->
-    @state.put  ( state ) -> state.profile = profile
-
 export default Greeting

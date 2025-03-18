@@ -10,15 +10,28 @@ Providers.add "local", Halstead
 
 # test components
 import Greeting from "./greeting"
+import PersonalizedGreeting from "./personalized-greeting"
 import List from "./list"
 
 do ->
 
   print await test "Addison", [
 
-    test "Basic Component", ->
+    test "Atomic", ->
 
       greeting = await Greeting.resolve()
+
+      greeting.listen()
+
+      greeting[ "set greeting" ] "hello!"
+      greeting[ "set greeting" ] "hola!"
+    
+      await assert.expect ->
+        greeting.state.value == "hola!"
+
+    test "Composite", ->
+
+      greeting = await PersonalizedGreeting.resolve()
 
       greeting.listen()
 
@@ -42,6 +55,7 @@ do ->
       list[ "remove item" ] "Ran"
     
       await assert.expect timeout: 5000, ->
+        # console.log list.state.value
         ( list.state.value.list?.length == 1 ) &&
           ( list.state.value.internal?.selected == "The Godfather" )
 

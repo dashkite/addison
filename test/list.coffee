@@ -1,8 +1,9 @@
 import * as Arr from "@dashkite/joy/array"
+import * as Fn from "@dashkite/joy/function"
 import Basic from "../src/mixins/basic"
 import { getters } from "../src/helpers/meta"
 
-{ resources, defaults } = Basic
+{ resources, fallbacks } = Basic
 
 class List
 
@@ -10,7 +11,7 @@ class List
     internal: template: "local:/components/list"
     list: template: "local:/lists/favorite-movies"
 
-  defaults @,
+  fallbacks @,
     list: []
     internal: {}
 
@@ -19,15 +20,15 @@ class List
   close: -> @state.close()
 
   "add item": ( item ) ->
-    @state.put ({ list }) -> 
+    @state.put Fn.tee ({ list }) -> 
       list.push item
 
   "select item": ( item ) ->
-    @state.put ({ internal }) ->
+    @state.put Fn.tee ({ internal }) ->
       internal.selected = item
 
   "remove item": ( item ) ->
-    @state.put ({ list, internal }) ->
+    @state.put Fn.tee ({ list, internal }) ->
       Arr.remove item, list
       if internal.selected == item
         internal.selected = list[0]
