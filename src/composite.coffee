@@ -1,4 +1,5 @@
 import * as Obj from "@dashkite/joy/object"
+import * as It from "@dashkite/joy/iterable"
 import * as Val from "@dashkite/joy/value"
 import * as Time from "@dashkite/joy/time"
 import { Queue } from "@dashkite/joy/iterable"
@@ -17,11 +18,7 @@ class Composite
     @machine = Channel.make()
     @run()
 
-  run: ->
-    for await state from @logic()
-      # console.log { state }
-      undefined
-    return
+  run: -> It.start @logic()
 
   logic: ->
 
@@ -33,6 +30,7 @@ class Composite
     yield name: "start"
 
     for await event from @machine
+      console.log event
       switch event.name
         when "resolve"
           resolved = true
@@ -74,7 +72,10 @@ class Composite
   #      or require a new instance?
   resolve: ( specifier ) ->
     for name, locator of @locators
-      @resources[ name ] = await Belmont.resolve { locator..., specifier... }
+      @resources[ name ] = await Belmont.resolve { 
+        locator...
+        specifier?[ name ]... 
+      }
       @channels[ name ] = @resources[ name ].subscribe()
     @machine.send name: "resolve"
 
@@ -100,6 +101,7 @@ class Composite
     for scope, resource of @resources
       do ( scope, resource ) =>
         for await event from @channels[ scope ]
+          console.log [ scope ]: event
           switch event.name
             when "value"
               @value[ scope ] = event.value
