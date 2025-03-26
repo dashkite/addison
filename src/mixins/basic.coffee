@@ -19,7 +19,7 @@ Basic =
       @
 
     T.resolve = ( specifier ) ->
-      T.make().resolve specifier
+      @make().resolve specifier
 
     getters T::,
       resource: -> @state.resource
@@ -38,7 +38,7 @@ Basic =
       @
 
     T.resolve = ( specifier ) ->
-      T.make().resolve specifier
+      @make().resolve specifier
 
     getters T::,
       resources: -> @state.resources
