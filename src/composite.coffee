@@ -30,7 +30,6 @@ class Composite
     yield name: "start"
 
     for await event from @machine
-      console.log event
       switch event.name
         when "resolve"
           resolved = true
@@ -101,7 +100,7 @@ class Composite
     for scope, resource of @resources
       do ( scope, resource ) =>
         for await event from @channels[ scope ]
-          console.log [ scope ]: event
+          # console.log [ scope ]: event
           switch event.name
             when "value"
               @value[ scope ] = event.value
