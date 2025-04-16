@@ -40,10 +40,11 @@ class Composite
           if !valid
             valid = true
             yield event
-            for mutator in puts
-              @value = await mutator @value
-            puts = []
-            @_put()
+            if puts.length > 0
+              for mutator in puts
+                @value = await mutator @value
+              puts = []
+              @_put()
         when "listen"
           if resolved
             @_listen()
