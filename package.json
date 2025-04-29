@@ -45,7 +45,8 @@
     "@dashkite/genie-coffee": "link:../genie-coffee",
     "@dashkite/genie-module": "link:../genie-module",
     "@dashkite/halstead": "link:../halstead",
-    "@dashkite/montrose": "link:../montrose"
+    "@dashkite/montrose": "link:../montrose",
+    "@dashkite/vista": "link:../vista"
   },
   "dependencies": {
     "@dashkite/joy": "link:../joy",

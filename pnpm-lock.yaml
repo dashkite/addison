@@ -45,6 +45,9 @@ importers:
       '@dashkite/montrose':
         specifier: link:../montrose
         version: link:../montrose
+      '@dashkite/vista':
+        specifier: link:../vista
+        version: link:../vista
 
 packages:
 
