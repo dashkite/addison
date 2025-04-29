@@ -64,8 +64,6 @@ class Atomic
   getters @::,
     valid: -> Object.hasOwn @, "value"
 
-  # TODO deactivate / cancel first?
-  #      or require a new instance?
   resolve: ( specifier ) ->
     @resource = await Belmont.resolve { @locator..., specifier... }
     @incoming = @resource.subscribe()

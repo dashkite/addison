@@ -68,8 +68,6 @@ class Composite
           return false
       true
 
-  # TODO deactivate / cancel first?
-  #      or require a new instance?
   resolve: ( specifier ) ->
     for name, locator of @locators
       @resources[ name ] = await Belmont.resolve { 
