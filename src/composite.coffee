@@ -41,9 +41,11 @@ class Composite
             valid = true
             yield event
             if puts.length > 0
+              value = @value
               for mutator in puts
-                @value = await mutator @value
+                value = await mutator value
               puts = []
+              @value = value
               @_put()
         when "listen"
           if resolved
@@ -55,10 +57,34 @@ class Composite
           @_get() if resolved
         when "put"
           if valid
-            await event.mutator @value
+            @value = await event.mutator @value
             @_put()
           else
             puts.push event.mutator
+        when "value"
+          if event.source == "resource"
+            { scope } = event
+            @value[ scope ] = event.value
+            @channel.send { event..., @value, scope }
+        when "not found"
+          if event.source == "resource"
+            { scope } = event
+            @value[ scope ] = @fallbacks?[ scope ]
+            @resources[ scope ].put @fallbacks?[ scope ]
+        when "method not allowed"
+          if event.source == "resource"
+            { scope } = event
+            if event.method == "get"
+              # you can't get this resource
+              # so treat it as valid (but undefined)
+              @value[ scope ] = undefined
+        else
+          { scope } = event
+          @channel.send { event..., scope }
+
+      if !valid && @valid
+        @machine.send name: "valid"
+
     return
 
   getters @::,
@@ -96,25 +122,15 @@ class Composite
   # "private" methods
 
   _listen: ->
-    for scope, resource of @resources
+    for scope, resource of @resources      
       do ( scope, resource ) =>
         for await event from @channels[ scope ]
-          # console.log [ scope ]: event
-          switch event.name
-            when "value"
-              @value[ scope ] = event.value
-              @channel.send { event..., @value, scope }
-            when "not found"
-              @value[ scope ] = @fallbacks?[ scope ]
-              @resources[ scope ].put @fallbacks?[ scope ]
-            when "method not allowed"
-              if event.method == "get"
-                # you can't get this resource
-                # so treat it as valid (but undefined)
-                @value[ scope ] = undefined
-            else
-              @channel.send { event..., scope }
-          ( @machine.send name: "valid" ) if @valid
+          @machine.send { 
+            event... 
+            source: "resource"
+            scope
+            resource
+          }
         return
     return
 
