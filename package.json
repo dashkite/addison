@@ -23,8 +23,8 @@
       "node": "./build/node/src/index.js"
     },
     "./*": {
-      "browser": "./build/browser/src/mixins/*.js",
-      "node": "./build/node/src/mixins/*.js"
+      "browser": "./build/browser/src/*.js",
+      "node": "./build/node/src/*.js"
     }
   },
   "files": [

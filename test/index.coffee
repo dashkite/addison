@@ -27,7 +27,7 @@ do ->
       greeting[ "set greeting" ] "hola!"
     
       await assert.expect ->
-        greeting.state.value == "hola!"
+        greeting.model.value == "hola!"
 
     test "Composite", ->
 
@@ -41,7 +41,7 @@ do ->
       greeting[ "set greeting" ] "hola!"
     
       await assert.expect ->
-        greeting.state.value.greeting == "hola!"
+        greeting.model.value.greeting == "hola!"
 
     test "Complex Component", ->
 
@@ -56,8 +56,8 @@ do ->
     
       await assert.expect timeout: 5000, ->
         # console.log list.state.value
-        ( list.state.value.list?.length == 1 ) &&
-          ( list.state.value.internal?.selected == "The Godfather" )
+        ( list.model.value.list?.length == 1 ) &&
+          ( list.model.value.internal?.selected == "The Godfather" )
 
   ]
 

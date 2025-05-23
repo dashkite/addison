@@ -1,20 +1,22 @@
 import { Queue } from "@dashkite/joy/iterable"
 import * as Fn from "@dashkite/joy/function"
+import { metaclass } from "@dashkite/joy/metaclass"
 import EventReactor from "@dashkite/reactive/event-reactor"
 import { getters } from "../helpers/meta"
 import { Composite, Atomic } from "../index"
+
 
 Basic =
 
   resource: ( T, locator ) ->
 
     T.make = ->
-      state = Atomic.make locator
-      self = Object.assign ( new @ ), { state }
+      model = Atomic.make locator
+      self = Object.assign ( new @ ), { model }
       self
 
     T::resolve = ( specifier ) -> 
-      await @state.resolve specifier
+      await @model.resolve specifier
       await @start?()
       @
 
@@ -22,18 +24,18 @@ Basic =
       @make().resolve specifier
 
     getters T::,
-      resource: -> @state.resource
-      channel: -> @state.outgoing    
+      resource: -> @model.resource
+      channel: -> @model.outgoing    
 
   resources: ( T, locators ) ->
 
     T.make = ->
-      state = Composite.make locators
-      self = Object.assign ( new @ ), { state }
+      model = Composite.make locators
+      self = Object.assign ( new @ ), { model }
       self
 
     T::resolve = ( specifier ) -> 
-      await @state.resolve specifier
+      await @model.resolve specifier
       await @start?()
       @
 
@@ -41,14 +43,14 @@ Basic =
       @make().resolve specifier
 
     getters T::,
-      resources: -> @state.resources
-      channel: -> @state.channel
+      resources: -> @model.resources
+      channel: -> @model.channel
 
   fallbacks: ( T, fallbacks ) ->
-    T::start = -> @state.fallbacks = fallbacks
+    T::start = -> @model.fallbacks = fallbacks
 
   fallback: ( T, fallback ) ->
-    T::start = -> @state.fallback = fallback
+    T::start = -> @model.fallback = fallback
 
   
 export default Basic

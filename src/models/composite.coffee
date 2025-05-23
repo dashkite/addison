@@ -1,3 +1,4 @@
+import { metaclass } from "@dashkite/joy/metaclass"
 import * as Obj from "@dashkite/joy/object"
 import * as It from "@dashkite/joy/iterable"
 import * as Val from "@dashkite/joy/value"
@@ -5,18 +6,25 @@ import * as Time from "@dashkite/joy/time"
 import { Queue } from "@dashkite/joy/iterable"
 import Belmont from "@dashkite/belmont"
 import Channel from "@dashkite/reactive/channel"
-import { getters } from "./helpers/meta"
 
-class Composite
+class Composite extends metaclass()
 
   @make: ( locators ) -> Object.assign new @, { locators }
 
   constructor: ->
+    super()
     @resources = {}
     @channels = {}
     @value ?= {}
     @machine = Channel.make()
     @run()
+
+  @getters
+    valid: ->
+      for key of @resources
+        if !( Object.hasOwn @value, key )
+          return false
+      true
 
   run: -> It.start @logic()
 
@@ -87,13 +95,6 @@ class Composite
 
     return
 
-  getters @::,
-    valid: ->
-      for key of @resources
-        if !( Object.hasOwn @value, key )
-          return false
-      true
-
   resolve: ( specifier ) ->
     for name, locator of @locators
       @resources[ name ] = await Belmont.resolve { 
@@ -143,3 +144,4 @@ class Composite
     return
 
 export { Composite }
+export default Composite

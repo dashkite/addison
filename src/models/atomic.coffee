@@ -1,16 +1,20 @@
+import { metaclass } from "@dashkite/joy/metaclass"
 import * as Obj from "@dashkite/joy/object"
 import * as Val from "@dashkite/joy/value"
 import * as Time from "@dashkite/joy/time"
 import { Queue } from "@dashkite/joy/iterable"
 import Belmont from "@dashkite/belmont"
 import Channel from "@dashkite/reactive/channel"
-import { getters } from "./helpers/meta"
 
-class Atomic
+class Atomic extends metaclass()
 
   @make: ( locator ) -> Object.assign new @, { locator }
 
+  @getters
+    valid: -> Object.hasOwn @, "value"
+
   constructor: ->
+    super()
     @resource = {}
     @machine = Channel.make()
     @run()
@@ -41,8 +45,10 @@ class Atomic
             valid = true
             yield event
             if puts.length > 0
+              value = @value
               for mutator in puts
-                @value = await mutator @value
+                value = await mutator value
+              @value = value
               puts = []
               @_put()
         when "listen"
@@ -60,9 +66,6 @@ class Atomic
           else
             puts.push event.mutator
     return
-
-  getters @::,
-    valid: -> Object.hasOwn @, "value"
 
   resolve: ( specifier ) ->
     @resource = await Belmont.resolve { @locator..., specifier... }
@@ -108,3 +111,4 @@ class Atomic
   _put: -> @resource.put @value
 
 export { Atomic }
+export default Atomic
