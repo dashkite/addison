@@ -116,9 +116,13 @@ class Composite extends metaclass()
     channel.close() for name, channel of @channels
     @channels = {}
 
-  get: -> @machine.send name: "get"
+  get: -> 
+    @machine.send name: "get"
+    return
 
-  put: ( mutator ) -> @machine.send { name: "put", mutator }
+  put: ( mutator ) -> 
+    @machine.send { name: "put", mutator }
+    return
 
   # "private" methods
 
