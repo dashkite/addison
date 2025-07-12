@@ -40,8 +40,8 @@ importers:
         specifier: link:../genie-module
         version: link:../genie-module
       '@dashkite/genie-release':
-        specifier: ^0.2.2
-        version: 0.2.2
+        specifier: ^0.2.3
+        version: 0.2.3
       '@dashkite/halstead':
         specifier: link:../halstead
         version: link:../halstead
@@ -57,8 +57,8 @@ packages:
   '@dashkite/amen@0.2.2':
     resolution: {integrity: sha512-bJBbRiIcQaKBT2A+EOltZaZMqGCptPw7rfSnTsu1AiicYWrXwe41zwo2W0a079OpJTLsH9v2vnU20xMCP9mQqA==}
 
-  '@dashkite/genie-release@0.2.2':
-    resolution: {integrity: sha512-4ylNzhFZbqQe1wghFwv3byh2ooBIv0uK/DlXQXvKbGOwVdAYVqCHy0pIQH2eWjc43tclwAVIq/CMKLZDsctlvA==}
+  '@dashkite/genie-release@0.2.3':
+    resolution: {integrity: sha512-uZOoG31RXa19nT4dxPw4Vrmy+HGP7PYzzpTL1qlq9LhTNsTXInzp9lWUMZq/4KBiQqexFjPNVuB7+GApmuAhvA==}
 
   '@dashkite/joy@0.3.16':
     resolution: {integrity: sha512-dsU0us4j1Pb+zceoBvLbnZ2PbmULkJUtM2vtWLxKmoc1DE4w9SVTiPTe6JWvF0A0vk90ldv+Lc9qEA5x3O+DtQ==}
@@ -109,7 +109,7 @@ snapshots:
 
   '@dashkite/amen@0.2.2': {}
 
-  '@dashkite/genie-release@0.2.2':
+  '@dashkite/genie-release@0.2.3':
     dependencies:
       '@dashkite/zephyr': 0.2.0
       zx: 8.6.1
