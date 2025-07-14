@@ -22,8 +22,8 @@ importers:
         specifier: ^0.0.2
         version: 0.0.2
       '@dashkite/assert':
-        specifier: link:../assert
-        version: link:../assert
+        specifier: 0.2.0
+        version: 0.2.0
       '@dashkite/belmont':
         specifier: link:../belmont
         version: link:../belmont
@@ -601,6 +601,9 @@ packages:
   '@dashkite/amen@0.2.2':
     resolution: {integrity: sha512-bJBbRiIcQaKBT2A+EOltZaZMqGCptPw7rfSnTsu1AiicYWrXwe41zwo2W0a079OpJTLsH9v2vnU20xMCP9mQqA==}
 
+  '@dashkite/assert@0.2.0':
+    resolution: {integrity: sha512-n1iAKpALq3ECibEVpNF8EJWMerHXjaRfJi7Nw8fdjBmb3CMjrV1qPdqOfyerEWDAcc1wixkQwwMruTvimK6DZA==}
+
   '@dashkite/genie-clean@0.2.0':
     resolution: {integrity: sha512-1L6Rzoiu7yRixhI6uPTCNSo3wHx/y2RgVlnUDAdO3I4TBCeU1h0Kiytr32ZCK7i3BCatObAdWJt0+9Nc3ZSUIw==}
 
@@ -620,6 +623,9 @@ packages:
 
   '@dashkite/joy@0.5.0':
     resolution: {integrity: sha512-kaDNKKS6v5r3vukOkh54aarrhiTHwbcKZZW8eDav5FhT6u8RRrmSaFeAbwLzGntdPScaEhqg/PLrvtPHOy9OlQ==}
+
+  '@dashkite/joy@0.6.0':
+    resolution: {integrity: sha512-6lFhlzHQ3SWqD1o8RcT6prWmiU5KHhdmG/t8AaGChRfYCYOahDmmLtaglMmpNJVWnve8nFL7BBC03+hnTl9HUw==}
 
   '@dashkite/kaiko@0.3.3':
     resolution: {integrity: sha512-XnAvVr9y2MsDqMLr4A24vkLF7Iuq3E8RjHEEpqhe29P5NevVX9jXKcXUStNMp9MSJbjHd2pqUNiM5Vvdja9ggg==}
@@ -2110,6 +2116,10 @@ snapshots:
 
   '@dashkite/amen@0.2.2': {}
 
+  '@dashkite/assert@0.2.0':
+    dependencies:
+      '@dashkite/joy': 0.6.0
+
   '@dashkite/genie-clean@0.2.0':
     dependencies:
       '@dashkite/masonry': 0.13.0
@@ -2150,6 +2160,8 @@ snapshots:
   '@dashkite/joy@0.3.16': {}
 
   '@dashkite/joy@0.5.0': {}
+
+  '@dashkite/joy@0.6.0': {}
 
   '@dashkite/kaiko@0.3.3': {}
 
