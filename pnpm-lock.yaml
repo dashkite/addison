@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@dashkite/joy':
-        specifier: link:../joy
-        version: link:../joy
+        specifier: 0.5.0
+        version: 0.5.0
       '@dashkite/reactive':
-        specifier: link:../reactive
-        version: link:../reactive
+        specifier: 0.1.0
+        version: 0.1.0
     devDependencies:
       '@dashkite/amen':
         specifier: ^0.2.0
@@ -618,6 +618,9 @@ packages:
   '@dashkite/joy@0.3.16':
     resolution: {integrity: sha512-dsU0us4j1Pb+zceoBvLbnZ2PbmULkJUtM2vtWLxKmoc1DE4w9SVTiPTe6JWvF0A0vk90ldv+Lc9qEA5x3O+DtQ==}
 
+  '@dashkite/joy@0.5.0':
+    resolution: {integrity: sha512-kaDNKKS6v5r3vukOkh54aarrhiTHwbcKZZW8eDav5FhT6u8RRrmSaFeAbwLzGntdPScaEhqg/PLrvtPHOy9OlQ==}
+
   '@dashkite/kaiko@0.3.3':
     resolution: {integrity: sha512-XnAvVr9y2MsDqMLr4A24vkLF7Iuq3E8RjHEEpqhe29P5NevVX9jXKcXUStNMp9MSJbjHd2pqUNiM5Vvdja9ggg==}
 
@@ -629,6 +632,12 @@ packages:
 
   '@dashkite/masonry@0.13.0':
     resolution: {integrity: sha512-qGP0Ortn8tzBTY9BRv965V5IIhJCmsNMTjLq0X7Pk80lBgNROc+tV/5BXjziBZ9CG7fcJ5h3ZvCsl1f6byfsFQ==}
+
+  '@dashkite/parse@0.5.0':
+    resolution: {integrity: sha512-werLa650mYvKyNQOOA4kGxmwBTyLXbN+swZeGbVbXyjH+1XMNmnBDUreLPr3J3PYyeU1xH2Nu7qdjXxSjWNw+g==}
+
+  '@dashkite/reactive@0.1.0':
+    resolution: {integrity: sha512-iVYgfZmbw/5rTGlrASm4FoSHQO+qIdYF1KNWH7O10dyeh8lNRztgDVYF/7BTAsFRZ0wisHOsIJF/f4WlmVj4TA==}
 
   '@dashkite/zephyr@0.2.0':
     resolution: {integrity: sha512-l3Fm9nyOIp1yBnv4IzGOKVgo1/UucU5WLvsqAfcP2jEVlE4AgpPkODssyloxTyC3N+bhcz1DXqC/7KokI1eVjA==}
@@ -2140,6 +2149,8 @@ snapshots:
 
   '@dashkite/joy@0.3.16': {}
 
+  '@dashkite/joy@0.5.0': {}
+
   '@dashkite/kaiko@0.3.3': {}
 
   '@dashkite/masonry-coffee@0.2.0':
@@ -2164,6 +2175,15 @@ snapshots:
       fast-glob: 3.3.3
     transitivePeerDependencies:
       - supports-color
+
+  '@dashkite/parse@0.5.0':
+    dependencies:
+      '@dashkite/joy': 0.3.16
+
+  '@dashkite/reactive@0.1.0':
+    dependencies:
+      '@dashkite/joy': 0.5.0
+      '@dashkite/parse': 0.5.0
 
   '@dashkite/zephyr@0.2.0':
     dependencies:
