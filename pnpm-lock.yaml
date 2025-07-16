@@ -37,14 +37,14 @@ importers:
         specifier: 0.9.0
         version: 0.9.0
       '@dashkite/genie-release':
-        specifier: link:../genie-release
-        version: link:../genie-release
+        specifier: 0.2.12
+        version: 0.2.12
       '@dashkite/halstead':
         specifier: 0.2.0
         version: 0.2.0
       '@dashkite/montrose':
-        specifier: link:../montrose
-        version: link:../montrose
+        specifier: 0.2.0
+        version: 0.2.0
 
 packages:
 
@@ -616,6 +616,9 @@ packages:
   '@dashkite/genie-coffee@0.9.0':
     resolution: {integrity: sha512-8Ukg3m/nQnxbmrww313lzYJJQRAxhRgbPpbqCWj7ovzS8LejoA1OGbbjRd8Ew7SdzZrJ6WYY7d08VxIbim72mw==}
 
+  '@dashkite/genie-release@0.2.12':
+    resolution: {integrity: sha512-pO0uXG1ntZT+inD63YobSW84MyeHNiEuwpiDsDR5LvwVfhXlwQtZEQCVpimfHKAf14SeZ5RL8YQKgeRy1V/+Lw==}
+
   '@dashkite/genie@0.16.0':
     resolution: {integrity: sha512-jaX9jpDHZnMJtmO5m0evteym4f69fK7vX8dXnBeDR9I0GGL8DYQgeZ8PeoOBwXq7Mvh9734Yyp+QfvXiOzy8gA==}
     engines: {node: '>=20.0.0'}
@@ -654,6 +657,9 @@ packages:
   '@dashkite/masonry@0.13.0':
     resolution: {integrity: sha512-qGP0Ortn8tzBTY9BRv965V5IIhJCmsNMTjLq0X7Pk80lBgNROc+tV/5BXjziBZ9CG7fcJ5h3ZvCsl1f6byfsFQ==}
 
+  '@dashkite/montrose@0.2.0':
+    resolution: {integrity: sha512-NnuRXoL7kfJoZl5F00EMvbcmi1phqewW/uW17c1bUWGUyOamZ4HzCFHK3qvxs8qp24A04dHqvembKPBcX1Mnvg==}
+
   '@dashkite/observable@0.6.0':
     resolution: {integrity: sha512-ZMQXvlvegr2XkpeD/pqv0tYzoIjgZq2vkSgmBkDq5BW49HdDqgXBzQ2omTq+wOOhtOyhdBJUOU7h5EdUjEI/AA==}
 
@@ -677,6 +683,9 @@ packages:
 
   '@dashkite/url-codex@0.5.0':
     resolution: {integrity: sha512-oQVWxXEOdC2B4UzvI/+gQJqzzbhxhRV9p/uMrnHy4WKLT/k9GtyEaqSWcvTJicCl17/goNP2hmdMroN5lgMkrg==}
+
+  '@dashkite/zephyr@0.2.0':
+    resolution: {integrity: sha512-l3Fm9nyOIp1yBnv4IzGOKVgo1/UucU5WLvsqAfcP2jEVlE4AgpPkODssyloxTyC3N+bhcz1DXqC/7KokI1eVjA==}
 
   '@eslint-community/eslint-utils@4.7.0':
     resolution: {integrity: sha512-dyybb3AcajC7uha6CvhdVRJqaKyn7w2YKqKyAN37NKYgZT36w+iRb0Dymmc5qEJ549c/S31cMMSFd75bteCpCw==}
@@ -1409,6 +1418,11 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  zx@8.7.1:
+    resolution: {integrity: sha512-28u1w2LlIfvyvJvYe6pmCipesk8oL5AFMVp+P/U445LcaPgzrU5lNDtAPd6nJvWmoCNyXZz37R/xKOGokccjsw==}
+    engines: {node: '>= 12.17.0'}
+    hasBin: true
 
 snapshots:
 
@@ -2172,6 +2186,11 @@ snapshots:
       - '@swc/helpers'
       - supports-color
 
+  '@dashkite/genie-release@0.2.12':
+    dependencies:
+      '@dashkite/zephyr': 0.2.0
+      zx: 8.7.1
+
   '@dashkite/genie@0.16.0':
     dependencies:
       '@dashkite/joy': 0.3.16
@@ -2239,6 +2258,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@dashkite/montrose@0.2.0':
+    dependencies:
+      '@dashkite/generic': 0.5.0
+
   '@dashkite/observable@0.6.0':
     dependencies:
       '@dashkite/joy': 0.3.16
@@ -2272,6 +2295,11 @@ snapshots:
     dependencies:
       '@dashkite/joy': 0.5.0
       '@dashkite/parse': 0.4.3
+
+  '@dashkite/zephyr@0.2.0':
+    dependencies:
+      '@dashkite/joy': 0.3.16
+      js-yaml: 4.1.0
 
   '@eslint-community/eslint-utils@4.7.0(eslint@8.57.1)':
     dependencies:
@@ -2953,3 +2981,5 @@ snapshots:
   yallist@3.1.1: {}
 
   yocto-queue@0.1.0: {}
+
+  zx@8.7.1: {}
