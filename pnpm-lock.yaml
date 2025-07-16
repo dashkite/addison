@@ -40,8 +40,8 @@ importers:
         specifier: ^0.2.12
         version: 0.2.12
       '@dashkite/halstead':
-        specifier: link:../halstead
-        version: link:../halstead
+        specifier: 0.2.0
+        version: 0.2.0
       '@dashkite/montrose':
         specifier: link:../montrose
         version: link:../montrose
@@ -624,6 +624,12 @@ packages:
     engines: {node: '>=20.0.0'}
     hasBin: true
 
+  '@dashkite/halstead@0.2.0':
+    resolution: {integrity: sha512-ZfbeA2vA7zJ1cxARhOkOJpID1yyDIqRCGwlSXveDE6MkcOyspkQovdnqAs0DYOoaclvrGHt2wc0obqn6FRg/qQ==}
+
+  '@dashkite/helium@0.8.0':
+    resolution: {integrity: sha512-f9FmNpG8eIS8Mj6jYJ93aOrBUW1yCxcaSA3tKOpkVOTwoeMRE6S/jHCxsojQ1SB1oQqzFp4hk7mVL1nSbGpgjA==}
+
   '@dashkite/joy@0.3.16':
     resolution: {integrity: sha512-dsU0us4j1Pb+zceoBvLbnZ2PbmULkJUtM2vtWLxKmoc1DE4w9SVTiPTe6JWvF0A0vk90ldv+Lc9qEA5x3O+DtQ==}
 
@@ -639,6 +645,9 @@ packages:
   '@dashkite/kaiko@0.3.3':
     resolution: {integrity: sha512-XnAvVr9y2MsDqMLr4A24vkLF7Iuq3E8RjHEEpqhe29P5NevVX9jXKcXUStNMp9MSJbjHd2pqUNiM5Vvdja9ggg==}
 
+  '@dashkite/katana@0.4.8':
+    resolution: {integrity: sha512-KOfMS5aRZItxPeMv0OXbOTCj5BZhN9jM190jae8HB7WgGB5uM5jEzRWmyh3yVbxTaL83o7csktRzUkxkr/Op1A==}
+
   '@dashkite/masonry-coffee@0.2.0':
     resolution: {integrity: sha512-xJO48SIRpsYbJF32CwpA6yeEJhNh+DtxCucyt4MNJqO0yru9X7hoxZsHneRoUE+kISD0KTO8DLQiHv21nU/V2A==}
 
@@ -647,6 +656,9 @@ packages:
 
   '@dashkite/masonry@0.13.0':
     resolution: {integrity: sha512-qGP0Ortn8tzBTY9BRv965V5IIhJCmsNMTjLq0X7Pk80lBgNROc+tV/5BXjziBZ9CG7fcJ5h3ZvCsl1f6byfsFQ==}
+
+  '@dashkite/observable@0.6.0':
+    resolution: {integrity: sha512-ZMQXvlvegr2XkpeD/pqv0tYzoIjgZq2vkSgmBkDq5BW49HdDqgXBzQ2omTq+wOOhtOyhdBJUOU7h5EdUjEI/AA==}
 
   '@dashkite/parse@0.4.3':
     resolution: {integrity: sha512-bE0kBjaGYjUnCzWJelQnx8vsfJ9YP07aRTVFZoY7TZWvMmnihoCSugL4IVWAOA2O0EAZXjT8FcjA4bNJ/BQwwg==}
@@ -659,6 +671,9 @@ packages:
 
   '@dashkite/scout@0.4.0':
     resolution: {integrity: sha512-AJOeAloHTTYPWCHjv+bXkgho+hbs4Fp4uekpW0QuUMmY+NbcF7DirDc9xpIRngFzZxJZ8aTzhbIm65v1naJN7g==}
+
+  '@dashkite/storage@0.5.0':
+    resolution: {integrity: sha512-8wK0GhL3+6He9TT/0zVbx0d0TF1GLOQZCFPxIMSI4/riBWmrPo0nJ2VX4KiBZQsYA/+hpVIP1WCO2PHjoMaXDw==}
 
   '@dashkite/url-codex@0.2.0':
     resolution: {integrity: sha512-12m6YzdBEP3Rb0QGTMv1cTw4KLO37VW3HDHuUQV7QJQOGRzvS5+iQqXLkhfDJBqRC4oc1t9+iQ/6PEUtYXXArw==}
@@ -2188,6 +2203,21 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
+  '@dashkite/halstead@0.2.0':
+    dependencies:
+      '@dashkite/belmont': 0.2.0
+      '@dashkite/generic': 0.5.0
+      '@dashkite/helium': 0.8.0
+      '@dashkite/joy': 0.7.0
+      '@dashkite/observable': 0.6.0
+      '@dashkite/reactive': 0.3.0
+      '@dashkite/storage': 0.5.0
+
+  '@dashkite/helium@0.8.0':
+    dependencies:
+      '@dashkite/joy': 0.3.16
+      '@dashkite/katana': 0.4.8
+
   '@dashkite/joy@0.3.16': {}
 
   '@dashkite/joy@0.5.0': {}
@@ -2197,6 +2227,10 @@ snapshots:
   '@dashkite/joy@0.7.0': {}
 
   '@dashkite/kaiko@0.3.3': {}
+
+  '@dashkite/katana@0.4.8':
+    dependencies:
+      '@dashkite/joy': 0.3.16
 
   '@dashkite/masonry-coffee@0.2.0':
     dependencies:
@@ -2221,6 +2255,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@dashkite/observable@0.6.0':
+    dependencies:
+      '@dashkite/joy': 0.3.16
+
   '@dashkite/parse@0.4.3':
     dependencies:
       '@dashkite/joy': 0.3.16
@@ -2238,6 +2276,8 @@ snapshots:
     dependencies:
       '@dashkite/joy': 0.3.16
       '@dashkite/url-codex': 0.2.0
+
+  '@dashkite/storage@0.5.0': {}
 
   '@dashkite/url-codex@0.2.0':
     dependencies:
