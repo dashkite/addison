@@ -9,7 +9,9 @@ import Channel from "@dashkite/reactive/channel"
 
 class Composite extends metaclass()
 
-  @make: ( locators ) -> Object.assign new @, { locators }
+  @make: ( locators ) -> 
+    instance = Object.assign new @, { locators }
+    instance
 
   constructor: ->
     super()
@@ -69,16 +71,30 @@ class Composite extends metaclass()
             @_put()
           else
             puts.push event.mutator
+        when "remove"
+          @_remove() if resolved
         when "value"
           if event.source == "resource"
             { scope } = event
             @value[ scope ] = event.value
-            @channel.send { event..., @value, scope }
+            if event.value?
+              @channel.send { event..., @value, scope }
+        when "created"
+          if event.source == "resource"
+            { scope } = event
+            @value[ scope ] = event.value
+            @channel.send { event..., scope }
         when "not found"
           if event.source == "resource"
             { scope } = event
-            @value[ scope ] = @fallbacks?[ scope ]
-            @resources[ scope ].put @fallbacks?[ scope ]
+            if ( fallback = @fallbacks?[ scope ] )?
+              @value[ scope ] = fallback
+              @resources[ scope ].put fallback
+              console.log "ADDISON: Dispatching aggregate fallback [ not found ]", JSON.stringify @value
+              @channel.send { event..., @value, scope }
+            else
+              console.log "ADDISON: Dispatching explicit [ not found ]"
+              @channel.send { event..., scope }
         when "method not allowed"
           if event.source == "resource"
             { scope } = event
@@ -124,6 +140,10 @@ class Composite extends metaclass()
     @machine.send { name: "put", mutator }
     return
 
+  remove: ->
+    @machine.send name: "remove"
+    return
+
   # "private" methods
 
   _listen: ->
@@ -145,6 +165,10 @@ class Composite extends metaclass()
 
   _put: ->
     ( resource.put @value[ name ]) for name, resource of @resources
+    return
+
+  _remove: ->
+    ( resource.delete()) for name, resource of @resources
     return
 
 export { Composite }
