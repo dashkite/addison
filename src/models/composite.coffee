@@ -9,7 +9,7 @@ import Channel from "@dashkite/reactive/channel"
 
 class Composite extends metaclass()
 
-  @make: ( locators ) -> 
+  @make: ( locators ) ->
     instance = Object.assign new @, { locators }
     instance
 
@@ -60,7 +60,7 @@ class Composite extends metaclass()
         when "listen"
           if resolved
             @_listen()
-            yield event        
+            yield event
           else
             listen = true
         when "get"
@@ -74,37 +74,49 @@ class Composite extends metaclass()
         when "remove"
           @_remove() if resolved
         when "value"
-          if event.source == "resource"
-            { scope } = event
-            @value[ scope ] = event.value
-            if event.value?
-              @channel.send { event..., @value, scope }
+          if event.internalSource == "resource"
+            { property } = event
+            @value[ property ] = event.value
+            @channel.send { event..., scope: "model", source: property }
+            if @valid
+              @channel.send name: "value", value: @value, scope: "model"
         when "created"
-          if event.source == "resource"
-            { scope } = event
-            @value[ scope ] = event.value
-            @channel.send { event..., scope }
-        when "not found"
-          if event.source == "resource"
-            { scope } = event
-            if ( fallback = @fallbacks?[ scope ] )?
-              @value[ scope ] = fallback
-              @resources[ scope ].put fallback
-              console.log "ADDISON: Dispatching aggregate fallback [ not found ]", JSON.stringify @value
-              @channel.send { event..., @value, scope }
+          if event.internalSource == "resource"
+            { property } = event
+            @value[ property ] = event.value
+            @channel.send { event..., scope: "model", source: property }
+            if @valid
+              @channel.send name: "value", value: @value, scope: "model"
+        when "delete"
+          if event.internalSource == "resource"
+            { property } = event
+            @channel.send { event..., scope: "model", source: property }
+            delete @value[ property ]
+            if @valid
+              @channel.send name: "value", value: @value, scope: "model"
+        when "not-found"
+          if event.internalSource == "resource"
+            { property } = event
+            if ( fallback = @fallbacks?[ property ] )?
+              @value[ property ] = fallback
+              @resources[ property ].put fallback
+              @channel.send { name: "value", value: @value, scope: "model", property, event... }
             else
-              console.log "ADDISON: Dispatching explicit [ not found ]"
-              @channel.send { event..., scope }
-        when "method not allowed"
-          if event.source == "resource"
-            { scope } = event
+              @value[ property ] = undefined
+              @channel.send { event..., scope: "model", source: property }
+        when "method-not-allowed"
+          if event.internalSource == "resource"
+            { property } = event
             if event.method == "get"
               # you can't get this resource
               # so treat it as valid (but undefined)
-              @value[ scope ] = undefined
+              @value[ property ] = undefined
+            else
+              @channel.send { event..., scope: "model", source: property }
         else
-          { scope } = event
-          @channel.send { event..., scope }
+          if event.internalSource == "resource"
+            { property } = event
+            @channel.send { event..., scope: "model", source: property }
 
       if !valid && @valid
         @machine.send name: "valid"
@@ -113,30 +125,32 @@ class Composite extends metaclass()
 
   resolve: ( specifier ) ->
     for name, locator of @locators
-      @resources[ name ] = await Belmont.resolve { 
+      @resources[ name ] = await Belmont.resolve {
         locator...
-        specifier?[ name ]... 
+        specifier?[ name ]...
       }
       @channels[ name ] = @resources[ name ].subscribe()
     @machine.send name: "resolve"
 
   listen: ->
-    throw new Error "addison: already listening" if @channel?
-    @channel = Channel.make()
-    @machine.send name: "listen"
-    @channel
-  
+    if @channel?
+      throw new Error "addison: already listening"
+    else
+      @channel = Channel.make()
+      @machine.send name: "listen"
+      @channel
+
   [ Symbol.asyncIterator ]: -> @listen()
 
   close: ->
     channel.close() for name, channel of @channels
     @channels = {}
 
-  get: -> 
+  get: ->
     @machine.send name: "get"
     return
 
-  put: ( mutator ) -> 
+  put: ( mutator ) ->
     @machine.send { name: "put", mutator }
     return
 
@@ -147,13 +161,13 @@ class Composite extends metaclass()
   # "private" methods
 
   _listen: ->
-    for scope, resource of @resources      
-      do ( scope, resource ) =>
-        for await event from @channels[ scope ]
-          @machine.send { 
-            event... 
-            source: "resource"
-            scope
+    for property, resource of @resources
+      do ( property, resource ) =>
+        for await event from @channels[ property ]
+          @machine.send {
+            event...
+            internalSource: "resource"
+            property
             resource
           }
         return

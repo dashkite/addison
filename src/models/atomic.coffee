@@ -54,14 +54,14 @@ class Atomic extends metaclass()
         when "listen"
           if resolved
             @_listen()
-            yield event        
+            yield event
           else
             listen = true
         when "get"
           @_get() if resolved
         when "put"
           if valid
-            await event.mutator @value
+            @value = await event.mutator @value
             @_put()
           else
             puts.push event.mutator
@@ -73,14 +73,16 @@ class Atomic extends metaclass()
     @machine.send name: "resolve"
 
   listen: ->
-    throw new Error "addison: already listening" if @outgoing?
-    @outgoing = Channel.make()
-    @machine.send name: "listen"
-    @outgoing
-  
+    if @outgoing?
+      throw new Error "addison: already listening"
+    else
+      @outgoing = Channel.make()
+      @machine.send name: "listen"
+      @outgoing
+
   [ Symbol.asyncIterator ]: -> @listen()
 
-  close: -> 
+  close: ->
     @incoming.close()
     delete @incoming
 
@@ -93,16 +95,28 @@ class Atomic extends metaclass()
   _listen: ->
     for await event from @incoming
       switch event.name
-        when "not found"
-          @value = @fallback
-          @resource.put @fallback
-        when "method not allowed"
+        when "value", "created"
+          @value = event.value
+          @outgoing.send { event..., scope: "model" }
+        when "delete"
+          delete @value
+          @outgoing.send { event..., scope: "model" }
+        when "not-found"
+          if ( fallback = @fallback )?
+            @value = fallback
+            @resource.put fallback
+          else
+            @value = undefined
+            @outgoing.send { event..., scope: "model" }
+        when "method-not-allowed"
           if event.method == "get"
             # you can't get this resource
             # so treat it as valid (but undefined)
             @value = undefined
+          else
+            @outgoing.send { event..., scope: "model" }
         else
-          @outgoing.send event
+          @outgoing.send { event..., scope: "model" }
       ( @machine.send name: "valid" ) if @valid
     return
 
