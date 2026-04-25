@@ -77,20 +77,20 @@ class Composite extends metaclass()
           if event.internalSource == "resource"
             { property } = event
             @value[ property ] = event.value
-            @channel.send { event..., scope: "model", source: property }
+            @channel.send { event..., source: property }
             if @valid
               @channel.send name: "value", value: @value, scope: "model"
         when "created"
           if event.internalSource == "resource"
             { property } = event
             @value[ property ] = event.value
-            @channel.send { event..., scope: "model", source: property }
+            @channel.send { event..., source: property }
             if @valid
               @channel.send name: "value", value: @value, scope: "model"
         when "delete"
           if event.internalSource == "resource"
             { property } = event
-            @channel.send { event..., scope: "model", source: property }
+            @channel.send { event..., source: property }
             delete @value[ property ]
             if @valid
               @channel.send name: "value", value: @value, scope: "model"
@@ -100,10 +100,10 @@ class Composite extends metaclass()
             if ( fallback = @fallbacks?[ property ] )?
               @value[ property ] = fallback
               @resources[ property ].put fallback
-              @channel.send { name: "value", value: @value, scope: "model", property, event... }
+              @channel.send { name: "value", value: @value, scope: "model", source: property, event... }
             else
               @value[ property ] = undefined
-              @channel.send { event..., scope: "model", source: property }
+              @channel.send { event..., source: property }
         when "method-not-allowed"
           if event.internalSource == "resource"
             { property } = event
@@ -112,11 +112,11 @@ class Composite extends metaclass()
               # so treat it as valid (but undefined)
               @value[ property ] = undefined
             else
-              @channel.send { event..., scope: "model", source: property }
+              @channel.send { event..., source: property }
         else
           if event.internalSource == "resource"
             { property } = event
-            @channel.send { event..., scope: "model", source: property }
+            @channel.send { event..., source: property }
 
       if !valid && @valid
         @machine.send name: "valid"

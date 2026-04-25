@@ -13,6 +13,11 @@ import Greeting from "./greeting"
 import PersonalizedGreeting from "./personalized-greeting"
 import List from "./list"
 
+wait = ( events, predicate ) ->
+  loop
+    event = await events.receive()
+    return event if predicate event
+
 do ->
 
   print await test "Addison", [
@@ -20,28 +25,47 @@ do ->
     test "Atomic", ->
 
       greeting = await Greeting.resolve()
-
-      greeting.listen()
+      events = greeting.listen()
 
       greeting[ "set greeting" ] "hello!"
-      greeting[ "set greeting" ] "hola!"
+      
+      # Wait for a non-protocol event (value or created)
+      event = await wait events, ( e ) -> e.name in [ "value", "created" ]
+
+      assert.equal "resource", event.scope
     
       await assert.expect ->
-        greeting.model.value == "hola!"
+        greeting.model.value == "hello!"
 
     test "Composite", ->
 
       greeting = await PersonalizedGreeting.resolve()
-
-      greeting.listen()
+      events = greeting.listen()
 
       greeting[ "set greeting" ] "hello!"
+      
+      # Wait for the forwarded sub-resource event
+      event = await wait events, ( e ) -> 
+        ( e.name in [ "value", "created" ] ) && ( e.source == "greeting" )
+      
+      assert.equal "resource", event.scope
+
       greeting[ "set profile" ] email: "bob@acme.org"
-      # update value
-      greeting[ "set greeting" ] "hola!"
+
+      # Wait for the forwarded sub-resource event
+      event = await wait events, ( e ) -> 
+        ( e.name in [ "value", "created" ] ) && ( e.source == "profile" )
+      
+      assert.equal "resource", event.scope
+
+      # Wait for the aggregate value event
+      event = await wait events, ( e ) -> 
+        ( e.name == "value" ) && ( e.scope == "model" )
+
+      assert.equal undefined, event.source
     
       await assert.expect ->
-        greeting.model.value.greeting == "hola!"
+        greeting.model.value.greeting == "hello!"
 
     test "Complex Component", ->
 

@@ -97,26 +97,26 @@ class Atomic extends metaclass()
       switch event.name
         when "value", "created"
           @value = event.value
-          @outgoing.send { event..., scope: "model" }
+          @outgoing.send event
         when "delete"
           delete @value
-          @outgoing.send { event..., scope: "model" }
+          @outgoing.send event
         when "not-found"
           if ( fallback = @fallback )?
             @value = fallback
             @resource.put fallback
           else
             @value = undefined
-            @outgoing.send { event..., scope: "model" }
+            @outgoing.send event
         when "method-not-allowed"
           if event.method == "get"
             # you can't get this resource
             # so treat it as valid (but undefined)
             @value = undefined
           else
-            @outgoing.send { event..., scope: "model" }
+            @outgoing.send event
         else
-          @outgoing.send { event..., scope: "model" }
+          @outgoing.send event
       ( @machine.send name: "valid" ) if @valid
     return
 
