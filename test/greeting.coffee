@@ -1,8 +1,9 @@
-import resource from "../src/mixins/resource"
+import Model from "@dashkite/addison/models/atomic"
 
-class Greeting extends do ( resource template: "local:/components/greeting" )
+class Greeting extends Model
 
-  "set greeting": ( greeting ) ->
-    @model.put ( state ) -> state = greeting
+  @make: -> super template: "local:/components/greeting"
   
+  fallback: "hello!"
+
 export default Greeting

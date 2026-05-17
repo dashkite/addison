@@ -2,11 +2,13 @@ import assert from "@dashkite/assert"
 import {test, success} from "@dashkite/amen"
 import print from "@dashkite/amen-console"
 
-import * as Time from "@dashkite/joy/time"
+import { tee } from "@dashkite/joy/function"
 
 import Providers from "@dashkite/belmont/providers"
 import Halstead from "@dashkite/halstead"
 Providers.add "local", Halstead
+
+import Value from "@dashkite/addison/value"
 
 # test components
 import Greeting from "./greeting"
@@ -14,9 +16,15 @@ import PersonalizedGreeting from "./personalized-greeting"
 import List from "./list"
 
 wait = ( events, predicate ) ->
-  loop
-    event = await events.receive()
-    return event if predicate event
+  if events.receive?
+    loop
+      event = await events.receive()
+      return event if predicate event
+  else
+    loop
+      { done, value } = await events.next()
+      break if done == true
+      return value if predicate value
 
 do ->
 
@@ -24,64 +32,99 @@ do ->
 
     test "Atomic", ->
 
-      greeting = await Greeting.resolve()
-      events = greeting.listen()
+      do ({ greeting } = {}) ->
 
-      greeting[ "set greeting" ] "hello!"
+        greeting = await Greeting.resolve()
+
+        # Wait for a non-protocol event (value or created)
+        event = await wait greeting, ({ name, scope }) -> 
+          ( name in [ "value", "created" ]) &&
+            ( scope == "resource" )
+
+        assert event?
       
-      # Wait for a non-protocol event (value or created)
-      event = await wait events, ( e ) -> e.name in [ "value", "created" ]
+        greeting.put ( greeting ) -> 
+          greeting.data = "hola!"
+          greeting
+        
+        await assert.expect -> 
+          greeting.value.data == "hola!"
 
-      assert.equal "resource", event.scope
-    
-      await assert.expect ->
-        greeting.model.value == "hello!"
+        greeting.delete()
+        event = await wait greeting, ({ name, scope }) -> 
+          name == "delete" && scope == "model"
+        
+        assert event?
+        assert greeting.value == undefined
 
     test "Composite", ->
 
-      greeting = await PersonalizedGreeting.resolve()
-      events = greeting.listen()
+      do ({ greeting } = {}) ->
 
-      greeting[ "set greeting" ] "hello!"
-      
-      # Wait for the forwarded sub-resource event
-      event = await wait events, ( e ) -> 
-        ( e.name in [ "value", "created" ] ) && ( e.source == "greeting" )
-      
-      assert.equal "resource", event.scope
+        greeting = await PersonalizedGreeting.resolve greeting: name: "Dan"
 
-      greeting[ "set profile" ] email: "bob@acme.org"
+        greeting.put tee ({ greeting }) -> greeting.data = "hola!"
+        
+        # Wait for the forwarded sub-resource event
+        event = await wait greeting, ({ name, scope, source }) -> 
+          ( name in [ "value", "created" ]) && 
+            ( scope == "model" ) &&
+            ( source == "greeting" )
+        
+        assert event?
 
-      # Wait for the forwarded sub-resource event
-      event = await wait events, ( e ) -> 
-        ( e.name in [ "value", "created" ] ) && ( e.source == "profile" )
-      
-      assert.equal "resource", event.scope
+        greeting.put tee ( value ) -> 
+          value.profile = Value.from email: "alice@acme.org"
 
-      # Wait for the aggregate value event
-      event = await wait events, ( e ) -> 
-        ( e.name == "value" ) && ( e.scope == "model" )
+        # Wait for the forwarded sub-resource event
+        event = await wait greeting, ({ name, scope, source }) -> 
+          ( name in [ "value", "created" ]) && 
+            ( scope == "resource" ) &&
+            ( source == "profile" )
+        
+        assert event?
 
-      assert.equal undefined, event.source
-    
-      await assert.expect ->
-        greeting.model.value.greeting == "hello!"
+        # Wait for the aggregate value event
+        event = await wait greeting, ({ name, scope, source }) -> 
+          ( name in [ "value", "created" ]) && 
+            ( scope == "model" ) &&
+            ( source == "profile" )
 
-    test "Complex Component", ->
+        assert event?
 
-      list = await List.resolve()
+        await assert.expect ->
+          greeting.value.greeting.data == "hola!"
 
-      list.listen()
+        greeting.delete()
+        
+        # Verify sub-resource delete events are forwarded
+        event = await wait greeting, ({ name, scope, source }) -> 
+          name == "delete" && scope == "model" && source == "greeting"
+        assert event?
 
-      list[ "add item" ] "The Godfather"
-      list[ "add item" ] "Ran"
-      list[ "select item" ] "Ran"
-      list[ "remove item" ] "Ran"
-    
-      await assert.expect timeout: 5000, ->
-        # console.log list.state.value
-        ( list.model.value.list?.length == 1 ) &&
-          ( list.model.value.internal?.selected == "The Godfather" )
+        event = await wait greeting, ({ name, scope, source }) -> 
+          name == "delete" && scope == "model" && source == "profile"
+        assert event?
+
+        assert greeting.value.greeting == undefined
+        assert greeting.value.profile == undefined
+
+    test "Complex", ->
+
+      do ({ list } = {}) ->
+
+        list = List.make()
+        await list.resolve()
+
+        list.add "The Godfather"
+        list.add "Ran"
+        list.select "Ran"
+        list.remove "Ran"
+
+        await assert.expect ->
+          ( list.value.list?.data?.length == 1 ) &&
+            ( list.value.list?.data?[ 0 ] == "The Godfather" ) &&
+            ( list.value.internal?.data.selected == "The Godfather" )
 
   ]
 

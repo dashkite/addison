@@ -1,16 +1,17 @@
-import * as Fn from "@dashkite/joy/function"
-import { resources } from "../src/mixins/resources"
+import Model from "@dashkite/addison/models/composite"
 
-class Greeting extends do (
-    resources
-      greeting: template: "local:/components/greeting"
+class Greeting extends Model
+
+  @make: ->
+    super
+      greeting: template: "local:/components/greeting/{name}"
       profile: template: "local:/profile"
-  )
-  
-  "set greeting": ( greeting ) ->
-    @model.put Fn.tee ( state ) -> state.greeting = greeting
-  
-  "set profile": ( profile ) ->
-    @model.put  Fn.tee ( state ) -> state.profile = profile
 
+  @resolve: ( bindings ) -> 
+    @make()
+      .resolve bindings
+  
+  fallbacks:
+    greeting: "hello!"
+  
 export default Greeting

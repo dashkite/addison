@@ -1,29 +1,28 @@
-import * as Arr from "@dashkite/joy/array"
-import * as Fn from "@dashkite/joy/function"
-import resources from "../src/mixins/resources"
+import { remove } from "@dashkite/joy/array"
+import { tee } from "@dashkite/joy/function"
+import Model from "@dashkite/addison/models/composite"
 
-class List extends do (
-    resources
+class List extends Model
+
+  @make: ->
+    super
       internal: template: "local:/components/list"
       list: template: "local:/lists/favorite-movies"
-  )
 
-  @fallbacks
+  fallbacks:
     list: []
     internal: {}
 
-  "add item": ( item ) ->
-    @model.put Fn.tee ({ list }) -> 
-      list.push item
+  add: ( item ) ->
+    @put tee ({ list }) -> list.data.push item
 
-  "select item": ( item ) ->
-    @model.put Fn.tee ({ internal }) ->
-      internal.selected = item
+  select: ( item ) ->
+    @put tee ({ internal }) -> internal.data.selected = item
 
-  "remove item": ( item ) ->
-    @model.put Fn.tee ({ list, internal }) ->
-      Arr.remove item, list
-      if internal.selected == item
-        internal.selected = list[0]
+  remove: ( item ) ->
+    @put tee ({ list, internal }) ->
+      remove item, list.data
+      if internal.data.selected == item
+        internal.data.selected = list.data[0]
 
 export default List

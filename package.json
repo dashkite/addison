@@ -51,6 +51,7 @@
   },
   "dependencies": {
     "@dashkite/joy": "^0.7.0",
-    "@dashkite/reactive": "^0.3.0"
+    "@dashkite/reactive": "^0.3.0",
+    "@dashkite/river": "link:../river"
   }
 }
