@@ -11,7 +11,7 @@ resolveable = ( base ) ->
     logic: ->
 
       requests = []
-      valid = false
+      initialized = false
       resolved = false
 
       yield name: "start"
@@ -27,9 +27,9 @@ resolveable = ( base ) ->
           @outgoing.source @listen()
           @_get()
 
-        .when "valid", ( event ) ->
-          if !valid
-            valid = true
+        .when "initialized", ( event ) ->
+          if !initialized && @initialized
+            initialized = true
             ( await action() ) for action in requests
             requests = []
 
@@ -40,13 +40,18 @@ resolveable = ( base ) ->
           action = =>
             @value = await event.mutator @value
             @_put()
-          if valid then await action() else requests.push action
+          if @initialized then await action() else requests.push action
 
         .when "delete", ->
           action = =>
             @_clear()
             @_delete()
-          if valid then await action() else requests.push action
+          if @initialized then await action() else requests.push action
+
+        .when "post", ( event ) ->
+          action = =>
+            @_post await event.builder @value
+          if @initialized then await action() else requests.push action
 
       await return
 

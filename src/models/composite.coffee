@@ -18,9 +18,9 @@ class Composite extends do pipe [
 
   @getters
 
-    valid: ->
-      for key of @resources
-        if !( Object.hasOwn @value, key )
+    initialized: ->
+      for key of @locators
+        if !( @_initialized[ key ] )
           return false
       true
 
@@ -36,6 +36,7 @@ class Composite extends do pipe [
     @incoming = Channel.make()
     @internal = Channel.make()
     @value ?= {}
+    @_initialized = {}
     start @logic()
 
   _get: ->
@@ -48,6 +49,10 @@ class Composite extends do pipe [
 
   _delete: ->
     ( resource.delete() ) for name, resource of @resources
+    return
+
+  _post: ( data ) ->
+    ( @resources[ name ].post value ) for name, value of data
     return
 
   _clear: -> @value = {}
@@ -81,7 +86,7 @@ class Composite extends do pipe [
 
       .forward "*"
 
-      .when "resource.value, resource.created", ( event ) ->
+      .when "resource.value", ( event ) ->
 
         { source } = event
         @value[ source ] = Value.from event.value
@@ -93,12 +98,22 @@ class Composite extends do pipe [
           value: @value[ source ]
         }
 
-        if @valid
+        @_initialized[ source ] = true
+        if @initialized
           yield 
             name: "value"
             scope: "model"
             value: @value
-          @internal.send name: "valid"
+          @internal.send name: "initialized"
+
+      .when "resource.created", ( event ) ->
+        { source } = event
+        unless event.locator?
+          @value[ source ] = Value.from event.value
+          @_initialized[ source ] = true
+          if @initialized
+            @internal.send name: "initialized"
+        yield { event..., scope: "model", source }
 
       .when "not-found", ( event ) ->
         { source } = event
@@ -119,8 +134,10 @@ class Composite extends do pipe [
           }
         else
           @value[ source ] = undefined
-        if @valid
-          @internal.send name: "valid"
+        
+        @_initialized[ source ] = true
+        if @initialized
+          @internal.send name: "initialized"
 
       .when "delete", ( event ) ->
         { source } = event
@@ -132,8 +149,10 @@ class Composite extends do pipe [
         # so treat it as valid (but undefined)
         { source } = event
         @value[ source ] = undefined
-        if @valid
-          @internal.send name: "valid"
+        
+        @_initialized[ source ] = true
+        if @initialized
+          @internal.send name: "initialized"
 
     await return
 

@@ -16,7 +16,7 @@ class Atomic extends do pipe [
   ]
 
   @getters
-    valid: -> Object.hasOwn @, "value"
+    initialized: -> @_initialized
 
   @make: ({ type, locator... }) -> 
     type ?= Value
@@ -27,6 +27,7 @@ class Atomic extends do pipe [
     @resource = {}
     @internal = Channel.make()
     @outgoing = Channel.make()
+    @_initialized = false
     start @logic()
 
   resolve: ( specifier ) ->
@@ -45,6 +46,8 @@ class Atomic extends do pipe [
 
   _delete: -> @resource.delete()
 
+  _post: ( data ) -> @resource.post data
+
   _clear: -> @value = undefined
 
   listen: ->
@@ -56,22 +59,30 @@ class Atomic extends do pipe [
 
       .forward "*"
 
-      .when "resource.value, resource.created", ( event ) ->
+      .when "resource.value", ( event ) ->
         @value = @type.from event.value
-        @internal.send name: "valid"
+        @_initialized = true
+        @internal.send name: "initialized"
         yield { event..., @value, scope: "model" }
+
+      .when "resource.created", ( event ) ->
+        unless event.locator?
+          @value = @type.from event.value
+          @_initialized = true
+          @internal.send name: "initialized"
+        yield { event..., scope: "model" }
 
       .when "not-found", ->
         if ( fallback = @fallback )?
           @value = @type.from fallback
-          @internal.send name: "valid"
           @resource.put fallback
         else
           @value = undefined
-          @internal.send name: "valid"
+        @_initialized = true
+        @internal.send name: "initialized"
 
       .when "delete", ->
-        @value = undefined
+        @_clear()
         yield { name: "delete", scope: "model" }
 
       .when "method-not-allowed", ( event ) ->
@@ -79,7 +90,8 @@ class Atomic extends do pipe [
           # you can't get this resource
           # so treat it as valid (but undefined)
           @value = undefined
-          @internal.send name: "valid"
+          @_initialized = true
+          @internal.send name: "initialized"
       
     await return
 
