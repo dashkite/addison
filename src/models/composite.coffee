@@ -17,26 +17,13 @@ class Composite extends do pipe [ metaclass, iterable ]
     ( @make specifier )
       .resolve specifier
 
-  @getters
-    initialized: ->
-      switch @_status
-        when "resolved"
-          Object
-            .values @_initialized
-            .every identity
-        when "initialized"
-          true
-        else
-          false
-
   constructor: ->
     super()
     @resources = {}
-    @types = {}
-    @requests = []
     @value = {}
-    @_initialized = {}
     @outgoing = Channel.make()
+    @internal = Channel.make()
+    @outgoing.source @_logic()
 
   get: -> 
     @execute ->
@@ -56,53 +43,18 @@ class Composite extends do pipe [ metaclass, iterable ]
     @execute ->
       @_post await builder @value
 
-  _start: ->
-    if @initialized
-      @_start = ->
-      ( await action.call @ ) for action in @requests
-      @requests = []
-      undefined
-
   execute: ( action ) ->
-    switch @_status
-      when "resolving", "resolved"
-        { promise, resolve, reject } = Promise.withResolvers()
-        @requests.push ->
-          Promise
-            .resolve action.call @
-            .then resolve
-            .catch reject
-        promise
-      when "initialized"
-        action.call @
-      else
-        throw new Error "addison: 
-          attempt to invoke a resource method
-          but the model is unresolved
-          (resolve was never called)"
+    { promise, resolve, reject } = Promise.withResolvers()
+    @_send "request", { resolve, reject, action }
+    @internal.send { name: "request", scope: "internal", resolve, reject, action }
+    promise
 
-  resolve: ( specifier ) ->
-    @_status = "resolving"
-    @incoming = Channel.make()
-    for name, { type, locator... } of @locators
-      @types[ name ] = type ? Value
-      { bindings, rest... } = locator
-      @resources[ name ] = await Belmont.resolve {
-        rest...
-        bindings: {
-          specifier?[ name ]...
-          bindings...
-        }
-      }
-      incoming = @resources[ name ].subscribe()
-      @incoming.source do ( name, incoming ) ->
-        for await event from incoming
-          yield { event..., source: name }
-      @_initialized[ name ] = false
-    @_status = "resolved"
-    @outgoing.source @_listen()
-    @_get()
+  resolve: ( specifier ) -> 
+    @_send "resolve", { specifier }
     @
+
+  _send: ( name, data ) ->
+    @internal.send { name, scope: "internal", data... }
 
   _get: ->
     ( resource.get()) for name, resource of @resources
@@ -122,67 +74,101 @@ class Composite extends do pipe [ metaclass, iterable ]
 
   _clear: -> @value = {}
 
-  _listen: ->
+  _logic: ->
+    
+    self = @
+    types = {}
+    initialized = false
+    resolved = false
+    requests = []
+
+    set = ( key, value ) ->
+
+      T = types[ key ] ? Value
+
+      self.value[ key ] = T.from value
+
+      initialized ||= 
+        Object
+          .keys self.locators
+          .every ( key ) -> 
+            Object.hasOwn self.value, key
+
+      self.value[ key ]
+
+    run = ({ resolve, reject, action }) ->
+      try
+        resolve await action.call self
+      catch error
+        reject error
 
     EventReactor
 
-      .make @incoming
+      .make @internal
       .bind @      
 
-      .forward "*"
+      .forward "!internal.*"
+
+      .when "internal.request", ( event ) ->
+        if resolved
+          if initialized then ( await run event ) else requests.push event
+        else 
+          throw new Error "addison: 
+            attempt to invoke a resource method
+            but the model is unresolved
+            (resolve was never called)"
+
+      .when "internal.resolve", ( event ) ->
+        { specifier } = event
+        for name, { type, locator... } of @locators
+          types[ name ] = type ? Value
+          { bindings, rest... } = locator
+          @resources[ name ] = await Belmont.resolve {
+            rest...
+            bindings: {
+              specifier?[ name ]...
+              bindings...
+            }
+          }
+          incoming = @resources[ name ].subscribe()
+          @internal.source do ( name, incoming ) ->
+            for await event from incoming
+              yield { event..., source: name }
+        resolved = true
+        ( await run event ) for event in requests
+        @_get()
 
       .when "resource.value", ( event ) ->
         { source } = event
-        @value[ source ] = Value.from event.value
-        yield { event..., scope: "model", source, value: @value[ source ] }
-        @_initialized[ source ] = true
-        if @initialized
-          @_status = "initialized"
+        value = set source, event.value
+        yield { event..., scope: "model", value }
+        if initialized
           yield { name: "value", scope: "model", value: @value }
-        @_start()
 
       .when "resource.created", ( event ) ->
         { source } = event
         unless event.locator?
-          @value[ source ] = Value.from event.value
-          @_initialized[ source ] = true
-          if @initialized
-            @_status = "initialized"
+          value = set source, event.value
+          if initialized
             yield { name: "value", scope: "model", value: @value }
-        yield { event..., scope: "model", source }
-        @_start()
 
-      .when "not-found", ( event ) ->
+      .when "response.not-found", ( event ) ->
         { source } = event
         fallback = @fallbacks?[ source ] ? @fallback
         if fallback?
-          T = @types[ source ] ? Value
-          @value[ source ] = value = T.from fallback
+          value = set source, fallback
           @resources[ source ].put fallback
-          yield { event..., name: "value", scope: "model", source, value }
-          @_initialized[ source ] = true
-          if @initialized
-            @_status = "initialized"
+          yield { name: "value", scope: "model", value }
+          if initialized
             yield { name: "value", scope: "model", value: @value }
         else
           @value[ source ] = undefined
-          @_initialized[ source ] = true
-          if @initialized then @_status = "initialized"
-        yield event
-        @_start()
 
-      .when "delete", ( event ) ->
-        { source } = event
-        @value[ source ] = undefined
-        yield { event..., name: "delete", scope: "model", source }
-
-      .when "method-not-allowed[method='get']", ( event ) ->
-        { source } = event
-        @value[ source ] = undefined
-        @_initialized[ source ] = true
-        if @initialized then @_status = "initialized"
-        yield event
-        @_start()
+      # TODO allow for whitespace in selector list
+      .when "resource.deleted,*.method-not-allowed[method='get']", 
+        ( event ) ->
+          { source } = event
+          @value[ source ] = undefined
 
 export { Composite }
 export default Composite
