@@ -46,7 +46,6 @@ class Composite extends do pipe [ metaclass, iterable ]
   execute: ( action ) ->
     { promise, resolve, reject } = Promise.withResolvers()
     @_send "request", { resolve, reject, action }
-    @internal.send { name: "request", scope: "internal", resolve, reject, action }
     promise
 
   resolve: ( specifier ) -> 
@@ -82,17 +81,24 @@ class Composite extends do pipe [ metaclass, iterable ]
     resolved = false
     requests = []
 
+    has = ( key ) -> Object.hasOwn self.value, key
+
     set = ( key, value ) ->
 
-      T = types[ key ] ? Value
+      self.value[ key ] = 
+        if value?
+          T = types[ key ] ? Value
+          T.from value
 
-      self.value[ key ] = T.from value
+      if !initialized
 
-      initialized ||= 
-        Object
-          .keys self.locators
-          .every ( key ) -> 
-            Object.hasOwn self.value, key
+        initialized = 
+          Object
+            .keys self.locators
+            .every has
+
+        if initialized
+          self._send "drain"
 
       self.value[ key ]
 
@@ -109,11 +115,14 @@ class Composite extends do pipe [ metaclass, iterable ]
 
       .forward "!internal.*"
 
-      .when "internal.request", ( event ) ->
+      .when "internal.request", ({ action, resolve, reject }) ->
         if resolved
-          if initialized then ( await run event ) else requests.push event
+          if initialized && ( requests.length == 0 )
+            await run { action, resolve, reject }
+          else 
+            requests.push { action, resolve, reject }
         else 
-          throw new Error "addison: 
+          reject new Error "addison: 
             attempt to invoke a resource method
             but the model is unresolved
             (resolve was never called)"
@@ -135,8 +144,10 @@ class Composite extends do pipe [ metaclass, iterable ]
             for await event from incoming
               yield { event..., source: name }
         resolved = true
-        ( await run event ) for event in requests
         @_get()
+
+      .when "internal.drain", ->
+        ( await run requests.shift()) while requests.length > 0
 
       .when "resource.value", ( event ) ->
         { source } = event
@@ -162,13 +173,13 @@ class Composite extends do pipe [ metaclass, iterable ]
           if initialized
             yield { name: "value", scope: "model", value: @value }
         else
-          @value[ source ] = undefined
+          set source, undefined
 
       # TODO allow for whitespace in selector list
       .when "resource.deleted,*.method-not-allowed[method='get']", 
         ( event ) ->
           { source } = event
-          @value[ source ] = undefined
+          set source, undefined
 
 export { Composite }
 export default Composite
