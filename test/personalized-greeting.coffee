@@ -4,8 +4,8 @@ class Greeting extends Model
 
   @make: ->
     super
-      greeting: template: "local:/components/greeting/{name}"
-      profile: template: "local:/profile"
+      greeting: template: "mock:/components/greeting/{name}"
+      profile: template: "mock:/profile"
 
   @resolve: ( bindings ) -> 
     @make()

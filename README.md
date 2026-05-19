@@ -6,11 +6,9 @@ Addison provides the foundational abstractions for reactive models in the Chicag
 
 # Background
 
-Addison is a core module within the Chicago System that provides the foundational abstractions for reactive models. It primarily implements two types of models: **Atomic** and **Composite**, which serve as the "M" in the RMVC+R architecture. These models are designed to be protocol-agnostic, wrapping reactive resources (managed by Belmont) and providing a uniform interface for application logic to interact with data.
+Addison's primary purpose is to provide a unified, protocol-agnostic interface for interacting with reactive data. In the Chicago System's RMVC+R (Reactive Model-View-Controller + Resources) architecture, Addison serves as the "Model" layer. It abstracts away the complexities of the underlying resource protocols (handled by Belmont) and provides application logic with a consistent way to observe and mutate state.
 
-At its core, Addison leverages a mixin-based architecture to handle resource lifecycle and reactivity. The `Atomic` model manages a single resource, while the `Composite` model aggregates multiple sub-resources into a unified state, re-emitting sub-resource events with a `source` identifier. Both model types utilize the `resolveable` mixin, which ensures that mutations are queued until the model reaches an "initialized" state—defined as having received its first protocol event (e.g., `value` or `not-found`). This guarantees sequential execution and state consistency regardless of the underlying storage latency.
-
-Functionally, Addison models are themselves reactive event streams (async iterators), allowing them to be consumed directly in `for await...from` loops or via `EventReactor`. They translate raw resource events into high-level model events, handling complexities such as fallback values and "not found" semantics. By abstracting the details of resource resolution and state synchronization, Addison enables developers to build complex, data-driven components that remain decoupled from specific storage implementations.
+By wrapping resources in **Atomic** (single-resource) or **Composite** (aggregate-resource) models, Addison allows developers to focus on domain logic rather than the mechanics of resource resolution, synchronization, and state management. Its built-in command queuing and centralized lifecycle management ensure that data remains consistent and predictable, even when dealing with high-latency or complex multi-resource dependencies.
 
 # Installation
 
@@ -58,6 +56,7 @@ greeting = await PersonalizedGreeting.resolve greeting: name: "Dan"
 # Other Resources
 
 - [Reference](docs/reference.md)
+- [Design](docs/design.md)
 
 # Status
 

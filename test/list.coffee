@@ -6,8 +6,8 @@ class List extends Model
 
   @make: ->
     super
-      internal: template: "local:/components/list"
-      list: template: "local:/lists/favorite-movies"
+      internal: template: "mock:/components/list"
+      list: template: "mock:/lists/favorite-movies"
 
   fallbacks:
     list: []

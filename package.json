@@ -47,6 +47,7 @@
     "@dashkite/genie-module": "link:../genie-module",
     "@dashkite/genie-release": "^0.5.0",
     "@dashkite/halstead": "link:../halstead",
+    "@dashkite/lakeshore": "link:../lakeshore",
     "@dashkite/montrose": "^0.2.0"
   },
   "dependencies": {

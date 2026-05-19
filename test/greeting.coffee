@@ -2,7 +2,7 @@ import Model from "@dashkite/addison/models/atomic"
 
 class Greeting extends Model
 
-  @make: -> super template: "local:/components/greeting"
+  @make: -> super template: "mock:/components/greeting"
   
   fallback: "hello!"
 
