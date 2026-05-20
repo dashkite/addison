@@ -3,8 +3,8 @@ import { pipe, tee } from "@dashkite/joy/function"
 import Channel from "@dashkite/reactive/channel"
 import EventReactor from "@dashkite/reactive/event-reactor"
 
-import iterable from "@dashkite/addison/mixins/iterable"
-import Model from "@dashkite/addison/models/composite"
+import iterable from "#mixins/iterable"
+import Model from "#models/composite"
 
 class Atomic extends do pipe [ metaclass, iterable ]
 

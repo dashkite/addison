@@ -1,6 +1,15 @@
+import Lakeshore from "@dashkite/lakeshore"
 import { remove } from "@dashkite/joy/array"
 import { tee } from "@dashkite/joy/function"
-import Model from "@dashkite/addison/models/composite"
+import Model from "@dashkite/addison/composite"
+
+Lakeshore.register "mock:/components/list",
+  get: -> { description: "ok", content: { selected: null } }
+  put: -> { description: "ok", exists: true }
+
+Lakeshore.register "mock:/lists/favorite-movies",
+  get: -> { description: "ok", content: [] }
+  put: -> { description: "ok", exists: true }
 
 class List extends Model
 
@@ -23,6 +32,6 @@ class List extends Model
     @put tee ({ list, internal }) ->
       remove item, list.data
       if internal.data.selected == item
-        internal.data.selected = list.data[0]
+        internal.data.selected = list.data[ 0 ]
 
 export default List

@@ -22,9 +22,35 @@
       "browser": "./build/browser/src/index.js",
       "node": "./build/node/src/index.js"
     },
-    "./*": {
-      "browser": "./build/browser/src/*.js",
-      "node": "./build/node/src/*.js"
+    "./atomic": {
+      "browser": "./build/browser/src/models/atomic.js",
+      "node": "./build/node/src/models/atomic.js"
+    },
+    "./composite": {
+      "browser": "./build/browser/src/models/composite.js",
+      "node": "./build/node/src/models/composite.js"
+    },
+    "./value": {
+      "browser": "./build/browser/src/value.js",
+      "node": "./build/node/src/value.js"
+    },
+    "./mixins/*": {
+      "browser": "./build/browser/src/mixins/*.js",
+      "node": "./build/node/src/mixins/*.js"
+    }
+  },
+  "imports": {
+    "#models/*": {
+      "browser": "./build/browser/src/models/*.js",
+      "node": "./build/node/src/models/*.js"
+    },
+    "#mixins/*": {
+      "browser": "./build/browser/src/mixins/*.js",
+      "node": "./build/node/src/mixins/*.js"
+    },
+    "#value": {
+      "browser": "./build/browser/src/value.js",
+      "node": "./build/node/src/value.js"
     }
   },
   "files": [

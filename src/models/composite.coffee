@@ -3,9 +3,10 @@ import { pipe, identity } from "@dashkite/joy/function"
 import Belmont from "@dashkite/belmont"
 import Channel from "@dashkite/reactive/channel"
 import EventReactor from "@dashkite/reactive/event-reactor"
-import Value from "@dashkite/addison/value"
+import Value from "#value"
 
-import iterable from "@dashkite/addison/mixins/iterable"
+import iterable from "#mixins/iterable"
+import Engine from "./engine"
 
 class Composite extends do pipe [ metaclass, iterable ]
 
@@ -49,64 +50,50 @@ class Composite extends do pipe [ metaclass, iterable ]
     promise
 
   resolve: ( specifier ) -> 
-    @_send "resolve", { specifier }
-    @
+    if @resolution?
+      return @resolution
+    { promise, resolve, reject } = Promise.withResolvers()
+    @resolution = promise
+    @_send "resolve", { specifier, resolve, reject }
+    promise
 
   _send: ( name, data ) ->
     @internal.send { name, scope: "internal", data... }
 
   _get: ->
-    ( resource.get()) for name, resource of @resources
+    for name, resource of @resources
+      await resource.get()
     return
 
   _put: ->
-    ( resource.put @value[ name ]?.data ) for name, resource of @resources
+    for name, resource of @resources
+      await resource.put @value[ name ]?.data
     return
 
   _delete: ->
-    ( resource.delete()) for name, resource of @resources
+    for name, resource of @resources
+      await resource.delete()
     return
 
   _post: ( data ) ->
-    ( @resources[ name ].post value ) for name, value of data
+    for name, value of data
+      await @resources[ name ].post value
     return
 
   _clear: -> @value = {}
 
   _logic: ->
-    
-    self = @
-    types = {}
-    initialized = false
-    resolved = false
-    requests = []
 
-    has = ( key ) -> Object.hasOwn self.value, key
+    engine = new Engine @
 
-    set = ( key, value ) ->
+    aggregate = do ( self = @ ) -> ->
+      if engine.initialized
+        yield { name: "value", scope: "model", value: self.value }
 
-      self.value[ key ] = 
-        if value?
-          T = types[ key ] ? Value
-          T.from value
-
-      if !initialized
-
-        initialized = 
-          Object
-            .keys self.locators
-            .every has
-
-        if initialized
-          self._send "drain"
-
-      self.value[ key ]
-
-    run = ({ resolve, reject, action }) ->
-      try
-        resolve await action.call self
-      catch error
-        reject error
+    fallback = ( source ) =>
+      if ( result = @fallbacks?[ source ])?
+        @resources[ source ].put result
+      result
 
     EventReactor
 
@@ -115,71 +102,41 @@ class Composite extends do pipe [ metaclass, iterable ]
 
       .forward "!internal.*"
 
-      .when "internal.request", ({ action, resolve, reject }) ->
-        if resolved
-          if initialized && ( requests.length == 0 )
-            await run { action, resolve, reject }
-          else 
-            requests.push { action, resolve, reject }
-        else 
-          reject new Error "addison: 
-            attempt to invoke a resource method
-            but the model is unresolved
-            (resolve was never called)"
+      .when "internal.request", ( event ) ->
+        engine.request event
 
       .when "internal.resolve", ( event ) ->
-        { specifier } = event
-        for name, { type, locator... } of @locators
-          types[ name ] = type ? Value
-          { bindings, rest... } = locator
-          @resources[ name ] = await Belmont.resolve {
-            rest...
-            bindings: {
-              specifier?[ name ]...
-              bindings...
-            }
-          }
-          incoming = @resources[ name ].subscribe()
-          @internal.source do ( name, incoming ) ->
-            for await event from incoming
-              yield { event..., source: name }
-        resolved = true
-        @_get()
+        engine.resolve event
 
       .when "internal.drain", ->
-        ( await run requests.shift()) while requests.length > 0
+        engine.drain()
 
       .when "resource.value", ( event ) ->
         { source } = event
-        value = set source, event.value
-        yield { event..., scope: "model", value }
-        if initialized
-          yield { name: "value", scope: "model", value: @value }
+        engine.set source, event.value
+        yield from aggregate()
 
       .when "resource.created", ( event ) ->
         { source } = event
         unless event.locator?
-          value = set source, event.value
-          if initialized
-            yield { name: "value", scope: "model", value: @value }
+          engine.set source, event.value
+          yield from aggregate()
 
-      .when "response.not-found", ( event ) ->
-        { source } = event
-        fallback = @fallbacks?[ source ] ? @fallback
-        if fallback?
-          value = set source, fallback
-          @resources[ source ].put fallback
-          yield { name: "value", scope: "model", value }
-          if initialized
-            yield { name: "value", scope: "model", value: @value }
+      .when "resource.deleted", ( event ) ->
+        engine.set event.source, undefined
+        yield from aggregate()
+
+      .when "failure", ( event ) ->
+        { source, response } = event
+        if response?.description == "not found"
+          if ( data = fallback source )?
+            engine.set source, data
+          else
+            engine.set source, undefined
         else
-          set source, undefined
-
-      # TODO allow for whitespace in selector list
-      .when "resource.deleted,*.method-not-allowed[method='get']", 
-        ( event ) ->
-          { source } = event
-          set source, undefined
+          engine.set source, undefined
+        yield from aggregate()
+        return
 
 export { Composite }
 export default Composite
