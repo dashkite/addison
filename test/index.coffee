@@ -5,7 +5,9 @@ import Providers from "@dashkite/belmont/providers"
 import Lakeshore from "@dashkite/lakeshore"
 Providers.add "mock", Lakeshore
 
-tests = ( name ) -> ( await import( "./groups/#{ name }" )).default()
+tests = ( name ) ->
+
+  ( await import( "./groups/#{ name }" )).default()
 
 do ->
 
@@ -14,7 +16,7 @@ do ->
     await tests "atomic"
     await tests "composite"
     await tests "edge-cases"
-    await tests "complex-model"
+    await tests "scenarios"
   ]
 
   process.exit if success then 0 else 1

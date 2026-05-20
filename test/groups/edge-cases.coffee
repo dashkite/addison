@@ -7,10 +7,13 @@ import Atomic from "@dashkite/addison/atomic"
 import { wait } from "../helpers"
 
 export default ->
-  test "Edge Cases",
-    [
+
+  test "Edge Cases", [
+
       test "clears on method-not-allowed", ->
+
         do ({ model } = {}) ->
+
           Lakeshore.register "mock:/edge-cases/method-not-allowed",
             get: -> description: "method-not-allowed"
           
@@ -21,8 +24,10 @@ export default ->
           await wait model, ({ name }) -> name == "failure"
           assert.expect -> model.value == undefined
 
-      test "handles mixed initialization (success, fallback, not-found)", ->
+      test "handles variant initialization", ->
+
         do ({ model } = {}) ->
+
           Lakeshore.register "mock:/edge-cases/mixed/a",
             get: -> { description: "ok", content: "A" }
           Lakeshore.register "mock:/edge-cases/mixed/b",
@@ -51,6 +56,7 @@ export default ->
             ( model.value.c == undefined )
 
       test "clears state on definitive failures", ->
+
         do ({ model } = {}) ->
 
           Lakeshore.register "mock:/edge-cases/errors/unauthorized",
@@ -63,7 +69,9 @@ export default ->
           assert.expect -> model.value == undefined
 
       test "propagates provider rejections", ->
+
         do ({ model } = {}) ->
+
           Lakeshore.register "mock:/edge-cases/crash",
             get: -> description: "ok", content: "foo"
             put: -> throw new Error "unexpected error"
@@ -77,6 +85,7 @@ export default ->
       test "serializes rapid sequential mutations", ->
 
         do ({ model, items } = {}) ->
+
           Lakeshore.register "mock:/edge-cases/stress",
             get: -> { description: "ok", content: { items } }
             put: ( _, { items }) -> 
@@ -103,12 +112,16 @@ export default ->
           assert.deepEqual [ 1..5 ], model.value.data.items
 
       test "throws on resolve with empty locators", ->
+
         do ({ model } = {}) ->
+
           model = Composite.make {}
           await assert.rejects -> model.resolve()
 
       test "is idempotent on multiple resolve calls", ->
+
         do ({ model } = {}) ->
+
           Lakeshore.register "mock:/edge-cases/idempotency",
             get: -> { description: "ok", content: "ok" }
           

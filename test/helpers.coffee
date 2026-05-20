@@ -1,20 +1,18 @@
 import { sleep } from "@dashkite/joy/time"
 
-wait = ( events, predicate, timeout = 1000 ) ->
+wait = ( model, predicate ) ->
+
   Promise.race [
+
     do ->
-      if events.receive?
-        loop
-          event = await events.receive()
-          return event if predicate event
-      else
-        loop
-          { done, value } = await events.next()
-          break if done == true
-          return value if predicate value
+      for await event from model
+        if predicate event
+          return event
+
     do ->
-      await sleep timeout
+      await sleep 1000
       throw new Error "Timeout waiting for event"
+
   ]
 
 export { wait }

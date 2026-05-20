@@ -5,6 +5,7 @@ import Value from "#value"
 
 # Mock model for testing the engine in isolation
 makeMockModel = ( locators ) ->
+
   model =
     locators: locators
     value: {}
@@ -21,6 +22,7 @@ export default ->
   test "Engine", [
 
     test "initial state", ->
+
       model = makeMockModel greeting: {}
       engine = new Engine model
       assert.expect -> ! engine.resolved
@@ -28,6 +30,7 @@ export default ->
       assert.expect -> engine.requests.length == 0
 
     test "transitions to resolved", ->
+
       model = makeMockModel greeting: template: "mock:/foo"
       engine = new Engine model
       # Simulate resolve (we don't await because we'd need to mock Belmont fully)
@@ -35,6 +38,7 @@ export default ->
       assert.expect -> engine.resolved
 
     test "queues requests when not initialized", ->
+
       model = makeMockModel greeting: {}
       engine = new Engine model
       engine.resolved = true
@@ -46,6 +50,7 @@ export default ->
       assert.expect -> ! requested
 
     test "transitions to initialized and triggers drain", ->
+
       model = makeMockModel greeting: {}, profile: {}
       engine = new Engine model
       engine.resolved = true
@@ -64,6 +69,7 @@ export default ->
           message.name == "drain"
 
     test "executes queued requests on drain", ->
+
       model = makeMockModel greeting: {}
       engine = new Engine model
       engine.resolved = true
@@ -81,6 +87,7 @@ export default ->
       assert.expect -> executed == 1
 
     test "rejects requests if not resolved", ->
+
       model = makeMockModel greeting: {}
       engine = new Engine model
       
