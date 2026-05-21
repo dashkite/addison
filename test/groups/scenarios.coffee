@@ -37,12 +37,12 @@ export default ->
   test "Scenarios", do ->
 
     Lakeshore.register "mock:/scenarios/list",
-      get: -> { description: "ok", content: { selected: null } }
-      put: -> { description: "ok", exists: true }
+      get: -> description: "ok", content: selected: null
+      put: -> description: "ok", exists: true
 
     Lakeshore.register "mock:/scenarios/favorite-movies",
-      get: -> { description: "ok", content: [] }
-      put: -> { description: "ok", exists: true }
+      get: -> description: "ok", content: []
+      put: -> description: "ok", exists: true
 
     list = List.make()
 

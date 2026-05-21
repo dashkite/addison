@@ -9,11 +9,13 @@ export default ->
   test "Atomic", await do ({ greeting } = {}) ->
 
     Lakeshore.register "mock:/atomic/greeting",
-      get: -> { description: "ok", content: "hello!" }
-      put: -> { description: "ok", exists: true }
-      delete: -> { description: "ok" }
+      get: -> description: "ok", content: "hello!"
+      put: -> description: "ok", exists: true
+      delete: -> description: "ok"
       post: ( _, data ) -> 
-        { description: "created", content: data, locator: { template: "mock:/greetings/1" } }
+        description: "created"
+        content: data
+        locator: template: "mock:/greetings/1"
 
     greeting = Atomic.make template: "mock:/atomic/greeting"
     greeting.fallback = "hello!"
@@ -28,28 +30,28 @@ export default ->
         await greeting.resolve()
         await wait greeting, ({ name, scope }) -> 
           ( name == "value" ) && ( scope == "resource" )
-        assert.expect -> greeting.value.data == "hello!"
+        await assert.expect -> greeting.value.data == "hello!"
 
       await test "updates via put", ->
 
-        greeting.put ( v ) -> 
+        await greeting.put ( v ) -> 
           v.data = "hola!"
           v
         await assert.expect -> greeting.value?.data == "hola!"
 
       await test "creates via post", ->
 
-        greeting.post ( v ) -> 
+        await greeting.post ( v ) -> 
           v.data = "hi!"
           v
         event = await wait greeting, ({ name, scope }) -> 
           ( name == "created" ) && ( scope == "resource" )
-        assert.expect -> event.value.data == "hi!"
+        await assert.expect -> event.value.data == "hi!"
 
       await test "deletes resource", ->
 
-        greeting.delete()
+        await greeting.delete()
         await wait greeting, ({ name, scope }) -> 
           ( name == "deleted" ) && ( scope == "resource" )
-        assert.expect -> greeting.value == undefined
+        await assert.expect -> greeting.value == undefined
     ]

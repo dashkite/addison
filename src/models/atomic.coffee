@@ -4,7 +4,7 @@ import Channel from "@dashkite/reactive/channel"
 import EventReactor from "@dashkite/reactive/event-reactor"
 
 import iterable from "#mixins/iterable"
-import Model from "#models/composite"
+import Model from "@dashkite/addison/composite"
 
 class Atomic extends do pipe [ metaclass, iterable ]
 
@@ -26,9 +26,9 @@ class Atomic extends do pipe [ metaclass, iterable ]
     @outgoing = Channel.make()
 
   resolve: ( specifier ) ->
-    @model.resolve $: specifier
+    promise = @model.resolve $: specifier
     @outgoing.source @_listen()
-    @
+    promise
 
   get: -> @model.get()
 

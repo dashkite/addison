@@ -35,3 +35,12 @@ Addison treats models as **Reactive Viewports**. The engine acts as a "reliable 
 - **Fallbacks**: If a resource returns "Not Found," the model can automatically apply a predefined fallback value, allowing the aggregate state to remain usable even in the absence of remote data.
 - **Rejection Propagation**: Mutation requests (`put`, `post`, `delete`) propagate rejections directly to the developer. If a provider throws or a mutator fails, the promise returned by the model method will reject with that error.
 - **Event Scopes**: Individual resource updates maintain their original scope (e.g., `scope: "resource"`), while only the final aggregate state transition uses `scope: "model"`.
+
+## Value Type Contract
+
+Addison enforces **Snapshot Safety** to prevent accidental mutation of the model's internal state. Every time `model.value` is accessed, the engine returns a deep-cloned snapshot. To support this, all resource value types MUST implement the following contract:
+
+- **Static `@from(data)`**: A static method that takes raw (or cloned) resource data and returns a new instance of the value wrapper.
+- **`data` property**: A property containing the serializable state of the resource. This property MUST be compatible with `structuredClone`.
+
+The default `Value` class provided by Addison adheres to this contract. Developers implementing custom domain-specific value wrappers must ensure they provide the static `from` method and that their `data` is cloneable.

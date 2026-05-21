@@ -8,6 +8,11 @@ import Value from "#value"
 import iterable from "#mixins/iterable"
 import Engine from "./engine"
 
+toArray = ( value ) ->
+  if Array.isArray value then value
+  else if value? then [ value ]
+  else null
+
 class Composite extends do pipe [ metaclass, iterable ]
 
   @make: ( locators ) ->
@@ -18,27 +23,40 @@ class Composite extends do pipe [ metaclass, iterable ]
     ( @make specifier )
       .resolve specifier
 
+  @getters
+    value: ->
+      snapshot = {}
+      for name, value of @_value
+        if value?
+          T = @types[ name ] ? Value
+          snapshot[ name ] = T.from structuredClone value.data
+        else
+          snapshot[ name ] = undefined
+      snapshot
+
   constructor: ->
     super()
     @resources = {}
-    @value = {}
+    @_value = {}
+    @types = {}
     @outgoing = Channel.make()
     @internal = Channel.make()
     @outgoing.source @_logic()
 
-  get: -> 
+  get: ( keys ) -> 
     @execute ->
-      @_get()
+      @_get toArray keys
 
   put: ( mutator ) ->
     @execute ->
-      @value = await mutator @value
+      @_value = await mutator @value
       @_put()
 
-  delete: ->
+  delete: ( keys ) ->
     @execute ->
-      @_clear()
-      @_delete()
+      targets = toArray keys
+      @_clear targets
+      @_delete targets
 
   post: ( builder ) ->
     @execute ->
@@ -50,29 +68,30 @@ class Composite extends do pipe [ metaclass, iterable ]
     promise
 
   resolve: ( specifier ) -> 
-    if @resolution?
-      return @resolution
-    { promise, resolve, reject } = Promise.withResolvers()
-    @resolution = promise
-    @_send "resolve", { specifier, resolve, reject }
-    promise
+    @_resolution ?= do =>
+      { promise, resolve, reject } = Promise.withResolvers()
+      @_send "resolve", { specifier, resolve, reject }
+      promise
 
   _send: ( name, data ) ->
     @internal.send { name, scope: "internal", data... }
 
-  _get: ->
+  _get: ( keys ) ->
     for name, resource of @resources
-      await resource.get()
+      if ( !keys? ) || ( name in keys )
+        await resource.get()
     return
 
-  _put: ->
+  _put: ( keys ) ->
     for name, resource of @resources
-      await resource.put @value[ name ]?.data
+      if ( !keys? ) || ( name in keys )
+        await resource.put @_value[ name ]?.data
     return
 
-  _delete: ->
+  _delete: ( keys ) ->
     for name, resource of @resources
-      await resource.delete()
+      if ( !keys? ) || ( name in keys )
+        await resource.delete()
     return
 
   _post: ( data ) ->
@@ -80,7 +99,11 @@ class Composite extends do pipe [ metaclass, iterable ]
       await @resources[ name ].post value
     return
 
-  _clear: -> @value = {}
+  _clear: ( keys ) ->
+    if keys?
+      ( delete @_value[ key ] ) for key in keys
+    else
+      @_value = {}
 
   _logic: ->
 
@@ -88,7 +111,7 @@ class Composite extends do pipe [ metaclass, iterable ]
 
     aggregate = do ( self = @ ) -> ->
       if engine.initialized
-        yield { name: "value", scope: "model", value: self.value }
+        yield name: "value", scope: "model", value: self.value
 
     fallback = ( source ) =>
       if ( result = @fallbacks?[ source ])?

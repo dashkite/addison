@@ -1,5 +1,5 @@
 import Belmont from "@dashkite/belmont"
-import Value from "@dashkite/addison/value"
+import Value from "#value"
 
 filter = ( name, incoming ) ->
   for await event from incoming
@@ -8,18 +8,17 @@ filter = ( name, incoming ) ->
 class Engine
 
   constructor: ( @model ) ->
-    @types = {}
     @initialized = false
     @resolved = false
     @requests = []
 
-  has: ( key ) => Object.hasOwn @model.value, key
+  has: ( key ) => Object.hasOwn @model._value, key
 
   set: ( key, value ) ->
 
-    @model.value[ key ] = 
+    @model._value[ key ] = 
       if value?
-        T = @types[ key ] ? Value
+        T = @model.types[ key ] ? Value
         T.from value
 
     if !@initialized
@@ -32,7 +31,7 @@ class Engine
       if @initialized
         @model._send "drain"
 
-    @model.value[ key ]
+    @model._value[ key ]
 
   run: ({ resolve, reject, action }) ->
     try
@@ -66,7 +65,7 @@ class Engine
 
       promised =
         for name, { type, locator... } of @model.locators
-          @types[ name ] = type ? Value
+          @model.types[ name ] = type ? Value
           { bindings, rest... } = locator        
           do ( name ) =>
             resource = @model.resources[ name ] = 

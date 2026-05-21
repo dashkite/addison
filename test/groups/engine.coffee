@@ -8,7 +8,8 @@ makeMockModel = ( locators ) ->
 
   model =
     locators: locators
-    value: {}
+    _value: {}
+    types: {}
     resources: {}
     messages: []
     _get: -> @got = true
@@ -25,17 +26,18 @@ export default ->
 
       model = makeMockModel greeting: {}
       engine = new Engine model
-      assert.expect -> ! engine.resolved
-      assert.expect -> ! engine.initialized
-      assert.expect -> engine.requests.length == 0
+      assert !engine.resolved
+      assert !engine.initialized
+      assert.equal engine.requests.length, 0
 
     test "transitions to resolved", ->
 
       model = makeMockModel greeting: template: "mock:/foo"
       engine = new Engine model
-      # Simulate resolve (we don't await because we'd need to mock Belmont fully)
+      # Simulate resolve 
+      # (we don't await because we'd need to mock Belmont fully)
       engine.resolved = true
-      assert.expect -> engine.resolved
+      assert engine.resolved
 
     test "queues requests when not initialized", ->
 
@@ -46,8 +48,8 @@ export default ->
       requested = false
       engine.request action: -> requested = true
       
-      assert.expect -> engine.requests.length == 1
-      assert.expect -> ! requested
+      assert.equal engine.requests.length, 1
+      assert !requested
 
     test "transitions to initialized and triggers drain", ->
 
@@ -57,16 +59,15 @@ export default ->
       
       # Set first resource
       engine.set "greeting", "hello"
-      assert.expect -> ! engine.initialized
-      assert.expect -> model.messages.length == 0
+      assert !engine.initialized
+      assert.equal model.messages.length, 0
       
       # Set second resource - should trigger initialization
       engine.set "profile", email: "dan@acme.org"
       
-      assert.expect -> engine.initialized
-      assert.expect ->
-        model.messages.some ( message ) -> 
-          message.name == "drain"
+      assert engine.initialized
+      assert model.messages.some ( message ) -> 
+        message.name == "drain"
 
     test "executes queued requests on drain", ->
 
@@ -81,10 +82,10 @@ export default ->
         resolve: resolve
         reject: reject
       
-      assert.expect -> executed == 0
+      assert.equal executed, 0
       
       await engine.drain()
-      assert.expect -> executed == 1
+      assert.equal executed, 1
 
     test "rejects requests if not resolved", ->
 
