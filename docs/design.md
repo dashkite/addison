@@ -38,7 +38,7 @@ Addison treats models as **Reactive Viewports**. The engine acts as a "reliable 
 
 ## Value Type Contract
 
-Addison enforces **Snapshot Safety** to prevent accidental mutation of the model's internal state. Every time `model.value` is accessed, the engine returns a deep-cloned snapshot. To support this, all resource value types MUST implement the following contract:
+Addison enforces **Snapshot Isolation** to prevent accidental mutation of the model's internal state. By providing **Value Semantics** through **Defensive Copying**, the engine ensures that every read operation returns an **Isolated Snapshot**. To support this, all resource value types MUST implement the following contract:
 
 - **Static `@from(data)`**: A static method that takes raw (or cloned) resource data and returns a new instance of the value wrapper.
 - **`data` property**: A property containing the serializable state of the resource. This property MUST be compatible with `structuredClone`.
