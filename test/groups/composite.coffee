@@ -20,12 +20,14 @@ export default ->
       put: -> description: "ok", exists: true
       delete: -> description: "ok"
 
-    greeting = Composite.make
-      greeting: template: "mock:/composite/greeting/{name}"
-      profile: template: "mock:/composite/profile"
+    greeting = 
+      Composite.make
+        greeting: 
+          template: "mock:/composite/greeting/{name}"
+          fallback: "hello!"
+        profile: 
+          template: "mock:/composite/profile"
     
-    greeting.fallbacks = greeting: "hello!"
-
     [
 
       await test "throws if mutated before resolution", ->

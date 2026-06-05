@@ -64,7 +64,8 @@ class Engine
           missing or empty locators"
 
       promised =
-        for name, { type, locator... } of @model.locators
+        for name, { type, fallback, locator... } of @model.locators
+          @model.fallbacks[ name ] ?= fallback
           @model.types[ name ] = type ? Value
           { bindings, rest... } = locator        
           do ( name ) =>

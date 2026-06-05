@@ -17,8 +17,10 @@ export default ->
         content: data
         locator: template: "mock:/greetings/1"
 
-    greeting = Atomic.make template: "mock:/atomic/greeting"
-    greeting.fallback = "hello!"
+    greeting = 
+      Atomic.make 
+        template: "mock:/atomic/greeting"
+        fallback: "hello!"
 
     [
       await test "throws if mutated before resolution", ->
@@ -30,14 +32,14 @@ export default ->
         await greeting.resolve()
         await wait greeting, ({ name, scope }) -> 
           ( name == "value" ) && ( scope == "resource" )
-        await assert.expect -> greeting.value.data == "hello!"
+        assert.equal greeting.value.data, "hello!"
 
       await test "updates via put", ->
 
         await greeting.put ( v ) -> 
           v.data = "hola!"
           v
-        await assert.expect -> greeting.value?.data == "hola!"
+        assert.equal greeting.value?.data, "hola!"
 
       await test "creates via post", ->
 

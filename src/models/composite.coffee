@@ -16,8 +16,7 @@ toArray = ( value ) ->
 class Composite extends do pipe [ metaclass, iterable ]
 
   @make: ( locators ) ->
-    instance = Object.assign new @, { locators }
-    instance
+    Object.assign new @, { locators }
 
   @resolve: ( specifier ) ->
     ( @make specifier )
@@ -38,6 +37,7 @@ class Composite extends do pipe [ metaclass, iterable ]
     super()
     @resources = {}
     @_value = {}
+    @fallbacks = {}
     @types = {}
     @outgoing = Channel.make()
     @internal = Channel.make()

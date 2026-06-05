@@ -9,10 +9,10 @@ import Model from "@dashkite/addison/composite"
 class Atomic extends do pipe [ metaclass, iterable ]
 
   @make: ( locator ) -> 
-    model = Model.make $: locator
-    self = Object.assign new @, { locator, model }
-    self.model.fallbacks = $: self.fallback
-    self
+    Object.assign new @, { 
+      locator
+      model: Model.make $: locator
+    }
 
   @resolve: ( specifier ) ->
     ( @make specifier )
@@ -43,9 +43,11 @@ class Atomic extends do pipe [ metaclass, iterable ]
       $: await builder value.$
 
   _listen: ->
-    for await { event..., source } from @model
-      if source? || ( event.scope != "model" )
-        yield event
+    for await { event..., value, source } from @model
+      if event.scope == "model"
+        yield { event..., value: value?.$ }
+      else
+        yield { event..., value }
 
 export { Atomic }
 export default Atomic
