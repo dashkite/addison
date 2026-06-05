@@ -1,6 +1,6 @@
 {
   "name": "@dashkite/addison",
-  "version": "0.2.14",
+  "version": "0.2.27",
   "description": "Chicago System Components",
   "keywords": [],
   "homepage": "https://github.com/dashkite/addison#readme",
@@ -63,6 +63,7 @@
     "release": "genie release"
   },
   "devDependencies": {
+
     "@dashkite/amen": "0.5.0",
     "@dashkite/amen-console": "0.4.0",
     "@dashkite/assert": "0.3.0",
@@ -75,6 +76,7 @@
     "@dashkite/halstead": "link:../halstead",
     "@dashkite/lakeshore": "link:../lakeshore",
     "@dashkite/montrose": "0.2.0"
+
   },
   "dependencies": {
     "@dashkite/joy": "0.7.0",
