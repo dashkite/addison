@@ -73,12 +73,12 @@
     "@dashkite/genie-module": "^0.5.59",
     "@dashkite/genie-release": "0.5.0",
     "@dashkite/halstead": "^0.3.30",
-    "@dashkite/lakeshore": "link:../lakeshore",
+    "@dashkite/lakeshore": "^0.0.2",
     "@dashkite/montrose": "0.2.0"
   },
   "dependencies": {
     "@dashkite/joy": "0.12.40",
     "@dashkite/reactive": "^0.7.35",
-    "@dashkite/river": "link:../river"
+    "@dashkite/river": "^0.0.11"
   }
 }
