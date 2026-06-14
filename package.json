@@ -66,19 +66,19 @@
     "@dashkite/amen": "0.9.30",
     "@dashkite/amen-console": "0.4.0",
     "@dashkite/assert": "0.3.0",
-    "@dashkite/belmont": "^0.3.29",
+    "@dashkite/belmont": "^0.3.30",
     "@dashkite/genie": "0.20.14",
     "@dashkite/genie-clean": "0.9.0",
     "@dashkite/genie-coffee": "0.9.0",
-    "@dashkite/genie-module": "^0.5.59",
+    "@dashkite/genie-module": "^0.5.60",
     "@dashkite/genie-release": "0.5.0",
-    "@dashkite/halstead": "^0.3.30",
+    "@dashkite/halstead": "^0.3.31",
     "@dashkite/lakeshore": "^0.0.2",
     "@dashkite/montrose": "0.2.0"
   },
   "dependencies": {
     "@dashkite/joy": "0.12.40",
-    "@dashkite/reactive": "^0.7.35",
+    "@dashkite/reactive": "^0.7.36",
     "@dashkite/river": "^0.0.11"
   }
 }
