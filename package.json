@@ -18,10 +18,6 @@
     "Chand Rajendra-Nicolucci <chand@dashkite.com>"
   ],
   "exports": {
-    ".": {
-      "browser": "./build/browser/src/index.js",
-      "node": "./build/node/src/index.js"
-    },
     "./atomic": {
       "browser": "./build/browser/src/models/atomic.js",
       "node": "./build/node/src/models/atomic.js"
